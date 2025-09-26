@@ -235,41 +235,41 @@ function renderBudgetTable() {
         // });
         
         // Category rows
-        budget.categories.forEach(category => {
-            // Category header row
-            const categoryRow = document.createElement('tr');
-            categoryRow.classList.add('category-row');
-            categoryRow.setAttribute('data-budget-id', budget.id);
+        // budget.categories.forEach(category => {
+        //     // Category header row
+        //     const categoryRow = document.createElement('tr');
+        //     categoryRow.classList.add('category-row');
+        //     categoryRow.setAttribute('data-budget-id', budget.id);
             
-            const categoryIcon = category.type === 'income' ? 
-                '<i class="fas fa-arrow-up" style="color: var(--success-green);"></i>' : 
-                '<i class="fas fa-arrow-down" style="color: var(--danger-red);"></i>';
+        //     const categoryIcon = category.type === 'income' ? 
+        //         '<i class="fas fa-arrow-up" style="color: var(--success-green);"></i>' : 
+        //         '<i class="fas fa-arrow-down" style="color: var(--danger-red);"></i>';
             
-            categoryRow.innerHTML = `
-                <td></td>
-                <td class="${category.type}-category" data-category="${category.name}">
-                    ${categoryIcon} ${category.name}
-                </td>                        
-                <td class="amount-cell">${calculateCategoryTotal(category, 0)}</td>
-                <td class="amount-cell">${calculateCategoryTotal(category, 1)}</td>
-                <td class="amount-cell">${calculateCategoryTotal(category, 2)}</td>
-                <td class="amount-cell">${calculateCategoryTotal(category, 3)}</td>
-                <td class="amount-cell">${calculateCategoryTotal(category, 4)}</td>
-                <td class="amount-cell">${calculateCategoryTotal(category, 5)}</td>
-                <td class="amount-cell">${calculateCategoryTotal(category, 6)}</td>
-                <td class="amount-cell">${calculateCategoryTotal(category, 7)}</td>
-                <td class="amount-cell">${calculateCategoryTotal(category, 8)}</td>
-                <td class="amount-cell">${calculateCategoryTotal(category, 9)}</td>
-                <td class="amount-cell">${calculateCategoryTotal(category, 10)}</td>
-                <td class="amount-cell">${calculateCategoryTotal(category, 11)}</td>
-            `;
-            budgetTableBody.appendChild(categoryRow);
+        //     categoryRow.innerHTML = `
+        //         <td></td>
+        //         <td class="${category.type}-category" data-category="${category.name}">
+        //             ${categoryIcon} ${category.name}
+        //         </td>                        
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 0)}</td>
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 1)}</td>
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 2)}</td>
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 3)}</td>
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 4)}</td>
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 5)}</td>
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 6)}</td>
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 7)}</td>
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 8)}</td>
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 9)}</td>
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 10)}</td>
+        //         <td class="amount-cell">${calculateCategoryTotal(category, 11)}</td>
+        //     `;
+        //     budgetTableBody.appendChild(categoryRow);
             
-            // Add click event to toggle category details
-            const categoryCell = categoryRow.querySelector(`.${category.type}-category`);
-            categoryCell.addEventListener('click', function() {
-                toggleCategoryDetails(budget.id, category.name);
-            });
+            // // Add click event to toggle category details
+            // const categoryCell = categoryRow.querySelector(`.${category.type}-category`);
+            // categoryCell.addEventListener('click', function() {
+            //     toggleCategoryDetails(budget.id, category.name);
+            // });
             
             // Account rows
             category.accounts.forEach(account => {
@@ -325,43 +325,8 @@ function calculateCategoryTotal(category, monthIndex) {
     return total === 0 ? '-' : total.toLocaleString();
 }
 
-// Toggle budget details (expand/collapse)
-function toggleBudgetDetails(budgetId) {
-    const budgetRow = document.querySelector(`.budget-name[data-budget-id="${budgetId}"]`).closest('tr');
-    const icon = budgetRow.querySelector('i');
-    
-    // Toggle icon
-    if (icon.classList.contains('fa-chevron-down')) {
-        icon.classList.remove('fa-chevron-down');
-        icon.classList.add('fa-chevron-up');
-    } else {
-        icon.classList.remove('fa-chevron-up');
-        icon.classList.add('fa-chevron-down');
-    }
-    
-    // Toggle visibility of category rows for this budget
-    const categoryRows = document.querySelectorAll(`tr[data-budget-id="${budgetId}"]`);
-    categoryRows.forEach(row => {
-        row.classList.toggle('collapsed');
-    });
-}
 
-// Toggle category details (expand/collapse)
-function toggleCategoryDetails(budgetId, categoryName) {
-    const categoryRow = document.querySelector(`tr[data-budget-id="${budgetId}"] .${categoryName.toLowerCase()}-category`).closest('tr');
-    const icon = categoryRow.querySelector('i');
-    
-    // Toggle icon rotation
-    if (icon.classList.contains('fa-arrow-up') || icon.classList.contains('fa-arrow-down')) {
-        icon.style.transform = icon.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
-    }
-    
-    // Toggle visibility of account rows for this category
-    const accountRows = document.querySelectorAll(`tr[data-budget-id="${budgetId}"][data-category="${categoryName}"]`);
-    accountRows.forEach(row => {
-        row.classList.toggle('collapsed');
-    });
-}
+
 
 // Add event listeners to amount inputs
 function addAmountInputListeners() {

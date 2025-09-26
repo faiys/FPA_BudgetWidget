@@ -38,8 +38,8 @@ function RenderBudgetTable(arrData){
         classid: item.Class.ID,
         budgetid: item.Budget_Manager.ID
     }));
-    
-    console.log(classArr);
+
+    console.log(CoaArr);
 
     // Render budget name with distinct
     BudgetNameArr.forEach(budgetN => {
@@ -58,22 +58,126 @@ function RenderBudgetTable(arrData){
         // Add click event to toggle budget details
         const budgetNameDiv = budgetRow.querySelector('.budget-name');
         budgetNameDiv.addEventListener('click', function() {
-            toggleBudgetDetails(budget.id);
+            toggleBudgetDetails(budgetN.id);
         });
 
         // Render class name
+        // Filter based on the budget ID in this class arr
+        let Class_filtered = classArr.filter(item => item.budgetid === budgetN.id);
+        Class_filtered.forEach(cls_element => {
+            const categoryRow = document.createElement('tr');
+            categoryRow.classList.add('category-row');
+            categoryRow.setAttribute('data-budget-id', cls_element.budgetid);
 
-        // prepare a Set of IDs from arr2
-        let arr2Ids = new Set(classArr.map(a => a.budgetid));
-        console.log(arr2Ids);
-        
-        // classArr.forEach(classObj => {
-        // if (classObj.has(budgetN.id)) {
-        //     console.log("Matched:", classObj); 
-        // } else {
-        //     console.log("Not matched:");
-        // }
-        // });
+            const categoryIcon = cls_element.class === 'REVENUE' ? 
+                '<i class="fas fa-arrow-up" style="color: var(--success-green);"></i>' : 
+                '<i class="fas fa-arrow-down" style="color: var(--danger-red);"></i>';
 
+            categoryRow.innerHTML = `
+                <td></td>
+                <td class="${cls_element.class}-category" data-category="${cls_element.class}">
+                    ${categoryIcon} ${cls_element.class}
+                </td>                        
+                <td class="amount-cell"></td>
+                <td class="amount-cell"></td>
+                <td class="amount-cell"></td>
+                <td class="amount-cell"></td>
+                <td class="amount-cell"></td>
+                <td class="amount-cell"></td>
+                <td class="amount-cell"></td>
+                <td class="amount-cell"></td>
+                <td class="amount-cell"></td>
+                <td class="amount-cell"></td>
+                <td class="amount-cell"></td>
+                <td class="amount-cell"></td>
+            `;
+            budgetTableBody.appendChild(categoryRow);
+
+            // Add click event to toggle category details
+            const categoryCell = categoryRow.querySelector(`.${cls_element.class}-category`);
+            categoryCell.addEventListener('click', function() {
+                toggleCategoryDetails(cls_element.budgetid, cls_element.class);
+            });
+
+             // Render Account name
+            // Filter based on the budget ID and class in this account arr
+            let Account_filtered = CoaArr.filter(item => item.budgetid === cls_element.budgetid && item.classid === cls_element.id);
+            Account_filtered.forEach(Account_element => {
+                const accountRow = document.createElement('tr');
+                accountRow.classList.add('account-row');
+                accountRow.setAttribute('data-budget-id', Account_element.budgetid);
+                accountRow.setAttribute('data-category', cls_element.class);
+                
+                accountRow.innerHTML = `
+                    <td></td>
+                    <td class="${Account_element.accountName}-category">
+                        ${Account_element.accountName}
+                    </td>                        
+                    <td class="amount-cell"></td>
+                    <td class="amount-cell"></td>
+                    <td class="amount-cell"></td>
+                    <td class="amount-cell"></td>
+                    <td class="amount-cell"></td>
+                    <td class="amount-cell"></td>
+                    <td class="amount-cell"></td>
+                    <td class="amount-cell"></td>
+                    <td class="amount-cell"></td>
+                    <td class="amount-cell"></td>
+                    <td class="amount-cell"></td>
+                    <td class="amount-cell"></td>
+                `;
+                 budgetTableBody.appendChild(accountRow);
+
+            });
+
+
+
+        });
+    });
+}
+
+// Toggle budget details (expand/collapse)
+function toggleBudgetDetails(budgetId) {
+    const budgetRow = document.querySelector(`.budget-name[data-budget-id="${budgetId}"]`).closest('tr');
+    const icon = budgetRow.querySelector('i');
+    
+    // Toggle icon
+    if (icon.classList.contains('fa-chevron-down')) {
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    } else {
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    }
+    
+    // Toggle visibility of category rows for this budget
+    const categoryRows = document.querySelectorAll(`tr[data-budget-id="${budgetId}"], tr[data-budget-id="${budgetId}"]`);
+     console.log("categoryRows - ", categoryRows)
+    categoryRows.forEach(row => {
+        row.classList.toggle('collapsed');
+    });
+
+    // Toggle visibility of Account rows for this budget
+    // const accountRows = document.querySelectorAll(`tr[data-budget-id="${budgetId}"]`);
+    // console.log("accountRows = ",accountRows)
+    // accountRows.forEach(row => {
+    //     row.classList.toggle('collapsed');
+    // });
+}
+
+// Toggle category details (expand/collapse)
+function toggleCategoryDetails(budgetId, categoryName) {
+    const categoryRow = document.querySelector(`tr[data-budget-id="${budgetId}"] .${categoryName}-category`).closest('tr');
+    const icon = categoryRow.querySelector('i');
+    
+    // Toggle icon rotation
+    if (icon.classList.contains('fa-arrow-up') || icon.classList.contains('fa-arrow-down')) {
+        icon.style.transform = icon.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
+    }
+    
+    // Toggle visibility of account rows for this category
+    const accountRows = document.querySelectorAll(`tr[data-budget-id="${budgetId}"][data-category="${categoryName}"]`);
+    accountRows.forEach(row => {
+        row.classList.toggle('collapsed');
     });
 }
