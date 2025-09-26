@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Budget Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="static/style.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- <script src="https://js.zohostatic.com/creator/widgets/version/1.0/widgetsdk-min.js"></script> -->
+    <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+  </head>
+  <body>
+      <div class="container-fluid">
+       <!-- Header Card -->
+        <div class="header-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1><i class="fas fa-chart-pie me-2"></i> Budget Management</h1>
+                <div>
+                    <button class="btn-action" id="addBudgetBtn">
+                        <i class="fas fa-plus-circle me-1"></i> Add Budget
+                    </button>
+                    <button class="btn-action" id="addAssumptionBtn">
+                        <i class="fas fa-calculator me-1"></i> Add Assumption
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Budget Form -->
+        <div class="form-container" id="budgetForm">
+            <div class="form-header">
+                <h3 class="form-title">Add New Budget</h3>
+                <button class="close-btn" id="closeBudgetForm">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="budgetFormContent">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="year" class="form-label">Year</label>
+                        <select class="form-control" id="year">
+                            <option value="">Select Year</option>
+                            <option value="2023">2023</option>
+                            <option value="2024" selected>2024</option>
+                            <option value="2025">2025</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="startMonth" class="form-label">Start Month</label>
+                        <select class="form-control" id="startMonth">
+                            <option value="">Select Month</option>
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="period" class="form-label">Period</label>
+                        <select class="form-control" id="period">
+                            <option value="3">3 Months</option>
+                            <option value="6">6 Months</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="budgetName" class="form-label">Budget Name</label>
+                        <input type="text" class="form-control" id="budgetName" placeholder="Enter budget name">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-submit">
+                    <i class="fas fa-check"></i> Add Budget
+                </button>
+            </form>
+        </div>
+        
+        <!-- Add Assumption Form -->
+        <div class="form-container" id="assumptionForm">
+            <div class="form-header">
+                <h3 class="form-title">Add New Assumption</h3>
+                <button class="close-btn" id="closeAssumptionForm">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="assumptionFormContent">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assumptionYear" class="form-label">Year</label>
+                        <select class="form-control" id="assumptionYear">
+                            <option value="">Select Year</option>
+                            <option value="2023">2023</option>
+                            <option value="2024" selected>2024</option>
+                            <option value="2025">2025</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="assumptionType" class="form-label">Assumption Type</label>
+                        <select class="form-control" id="assumptionType">
+                            <option value="inflation">Inflation Rate</option>
+                            <option value="growth">Growth Rate</option>
+                            <option value="exchange">Exchange Rate</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="assumptionValue" class="form-label">Value (%)</label>
+                        <input type="number" class="form-control" id="assumptionValue" placeholder="Enter value">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-submit">
+                    <i class="fas fa-check"></i> Add Assumption
+                </button>
+            </form>
+        </div>
+        
+        <!-- Data Table -->
+        <div class="data-table-container">
+            <div class="table-responsive">
+                <table class="table table-hover budget-table ">
+                    <thead>
+                        <tr>
+                            <th colspan="2"></th>
+                            <th>January</th>
+                            <th>February</th>
+                            <th>March</th>
+                            <th>April</th>
+                            <th>May</th>
+                            <th>June</th>
+                            <th>July</th>
+                            <th>August</th>
+                            <th>September</th>
+                            <th>October</th>
+                            <th>November</th>
+                            <th>December</th>
+                        </tr>
+                    </thead>
+                    <tbody id="budgetTableBody">
+                        <!-- Budget data will be populated here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter Panel -->
+    <div class="filter-panel" id="filterPanel">
+        <div class="filter-header">
+            <h3 class="filter-title">Filter & Sort</h3>
+            <button class="filter-close" id="closeFilterPanel">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label">Year</label>
+            <select class="form-control" id="filterYear">
+                <option value="all">All Years</option>
+                <option value="2023">2023</option>
+                <option value="2024" selected>2024</option>
+                <option value="2025">2025</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label">Month</label>
+            <select class="form-control" id="filterMonth">
+                <option value="all">All Months</option>
+                <option value="0">January</option>
+                <option value="1">February</option>
+                <option value="2">March</option>
+                <option value="3">April</option>
+                <option value="4">May</option>
+                <option value="5">June</option>
+                <option value="6">July</option>
+                <option value="7">August</option>
+                <option value="8">September</option>
+                <option value="9">October</option>
+                <option value="10">November</option>
+                <option value="11">December</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label">Category</label>
+            <select class="form-control" id="filterCategory">
+                <option value="all">All Categories</option>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label">Account Name</label>
+            <select class="form-control" id="filterAccount">
+                <option value="all">All Accounts</option>
+                <!-- Options will be populated by JavaScript -->
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label">Sort By</label>
+            <select class="form-control" id="sortBy">
+                <option value="name">Budget Name</option>
+                <option value="category">Category</option>
+                <option value="amount">Total Amount</option>
+            </select>
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label">Order</label>
+            <div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="sortOrder" id="ascOrder" value="asc" checked>
+                    <label class="form-check-label" for="ascOrder">Ascending</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="sortOrder" id="descOrder" value="desc">
+                    <label class="form-check-label" for="descOrder">Descending</label>
+                </div>
+            </div>
+        </div>
+        
+        <button class="btn btn-submit w-100 mt-3" id="applyFilterBtn">
+            Apply Filters
+        </button>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+
+  </body>
+  <script src="static/pagejs.js"></script>
+  <script src="static/functionality.js"></script>
+  <script src="static/zoho.js"></script>
+</html>
