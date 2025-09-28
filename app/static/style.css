@@ -8,6 +8,8 @@
     --light-gray: #f5f5f5;
     --medium-gray: #e0e0e0;
     --dark-gray: #757575;
+    --head-orange : #f06142;
+    --head-darkOrange : #521c11;
 }
 
 body {
@@ -25,7 +27,7 @@ body {
 
 /* Header Card Styles */
 .header-card {
-    background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
+    background: linear-gradient(135deg, var(--head-orange), var( --head-darkOrange));
     border-radius: 12px;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
     padding: 8px;
@@ -195,6 +197,42 @@ body {
     animation: fadeIn 0.8s ease-out;
 }
 
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px;
+}
+
+/* Freeze first column */
+table thead td:first-child,
+table thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3; /* higher than other cells */
+}
+
+table tbody td:first-child,
+table tbody th:first-child {
+  position: sticky;
+  left: 0;
+  background: #fff; /* keep visible over scroll */
+  z-index: 3; /* higher than other cells */
+}
+
+/* Freeze second column (Category/Revenue/Expense) */
+table tbody td:nth-child(2),
+table tbody th:nth-child(2) {
+  position: sticky;
+  left: 16px; 
+  background: #f9f9f9;
+  z-index: 2;
+}
+
+
 .table-header {
     background: linear-gradient(135deg, var(--primary-blue), var(--dark-blue));
     color: white;
@@ -232,23 +270,22 @@ body {
 .budget-table {
     width: 100%;
     border-collapse: collapse;
+    text-align: center;
 }
 
 .budget-table th {
-    background-color: var(--primary-blue);
+    background-color: var(--head-darkOrange);
     padding: 6px 15px;
     /* text-align: center; */
     /* font-weight: 600; */
     border-bottom: 2px solid var(--medium-gray);
     color:#fff; 
-    text-align:center; 
+    /* text-align:center;  */
     /* font-size:0.9rem; */
     text-wrap: nowrap;
 }
 
 .budget-table td {
-    width: 50px;
-    padding: 6px 3px;
     border-bottom: 1px solid var(--medium-gray);
     transition: all 0.3s;
 }
@@ -260,41 +297,60 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
+    text-wrap: nowrap;
 }
 
-.category-row {
-    background-color: rgba(0, 0, 0, 0.02);
+.tdfont{
+    font-weight: 600;
+    min-width: 100px;
+    text-wrap: nowrap;
+    text-align: end;
 }
 
-.income-category {
-    color: var(--success-green);
+.REVENUE-category {
     font-weight: 600;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    text-align: justify;
 }
 
-.expense-category {
-    color: var(--danger-red);
+.EXPENSE-category {
     font-weight: 600;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    text-align: justify;
 }
 
-.account-row {
+.account-td {
     background-color: rgba(0, 0, 0, 0.01);
 }
-
-.account-name {
-    padding-left: 30px !important;
+.account-td{
+    padding-left: 3rem !important;
+    text-wrap: nowrap;
+    text-align: justify;
+}
+.customer-td{
+    padding-left: 5rem !important;
+    text-wrap: nowrap;
+    text-align: justify;
+    min-width: 23rem;
 }
 
 .amount-cell {
     position: relative;
     text-align: center;
+    font-weight: 450;
+    min-width: 100px;
+    text-wrap: nowrap;
+    text-align: end;
+}
+
+.amount-cell.editing {
+    background-color: #fff7d6; /* light yellow highlight */
+    transition: background-color 0.5s;
+}
+
+.customer-td.editing {
+    background-color: #fff7d6; /* light yellow highlight */
+    transition: background-color 0.5s;
 }
 
 .amount-input {
@@ -303,8 +359,9 @@ body {
     background: transparent;
     border-radius: 4px;
     padding: 5px 8px;
-    text-align: center;
+    text-align: end;
     transition: all 0.3s;
+    /* margin-left: 18px; */
 }
 
 .amount-input:focus {
@@ -312,6 +369,20 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.1);
 }
 
+.amount-input-text {
+    width: 100%;
+    border:none;
+    background: transparent;
+    border-radius: 4px;
+    padding: 5px 8px;
+    transition: all 0.3s;
+    /* margin-left: 18px; */
+}
+
+.amount-input-text:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 0.2rem rgba(25, 118, 210, 0.1);
+}
 .amount-actions {
     position: absolute;
     top: 50%;
@@ -350,7 +421,7 @@ body {
     pointer-events: none;
 }
 
-.collapsed {
+.collapsed, .hidden-budget, .hidden-category {
     display: none;
 }
 

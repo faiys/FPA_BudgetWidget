@@ -1,45 +1,131 @@
+const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
 // Render budget Table
 function RenderBudgetTable(arrData){
     budgetTableBody.innerHTML = '';
     // arrData.sort((a, b) => b.Year_field - a.Year_field);
     console.log("arrData - ",arrData);
 
-    // Budget name Arr
-    let distinctByBudgetName = [
-    ...new Map(arrData.map(item => [item.Budget_Manager.ID, item])).values()
-    ];
-    let BudgetNameArr = distinctByBudgetName.map(item => ({
-        id: item.Budget_Manager.ID,
-        name: item.Budget_Manager.Name
-    }));
+    // Step 1: Sum month-wise by Budget_Manager.ID
+    const BudgetNameArr = Object.values(
+    arrData.reduce((acc, b) => {
+        const budgetId = b.Budget_Manager.ID;
+        if (!acc[budgetId]) {
+        acc[budgetId] = { 
+            id: budgetId,
+            name: b.Budget_Manager.Name,
+            ...months.reduce((m, month) => { m[month] = 0; return m }, {}) // initialize months
+        };
+        }
+        months.forEach(month => {
+        acc[budgetId][month] += parseFloat(b[month] || 0);
+        });
+        return acc;
+    }, {})
+    );
 
-    // Remove duplicate budget ID and class ID
-    let distinctByClassBudget = [
-    ...new Map(
-        arrData.map(item => [
-        item.Class.ID + "_" + item.Budget_Manager.ID, // 👈 composite key
-        item
-        ])
-    ).values()
-    ];
-    let classArr = distinctByClassBudget.map(item => ({
-        id: item.Class.ID,
-        class: item.Class.Class,
-        budgetid: item.Budget_Manager.ID
-    }));
+    // ✅ Step 1: Find all month keys dynamically
+    const category_months = Array.from(
+    new Set(
+        arrData.flatMap(obj =>
+        Object.keys(obj).filter(k => !['Class','Budget_Manager'].includes(k))
+        )
+    )
+    );
 
-    // Remove duplicate budget ID and class and Account Name
-    let distinctByaccname = [
-    ...new Map(arrData.map(item => [item.Account_Name.ID+ "_" +item.Class.ID+ "_" + item.Budget_Manager.ID, item])).values()
-    ];
-    let CoaArr = distinctByaccname.map(item => ({
-        id: item.Account_Name.ID,
-        accountName: item.Account_Name.Account_Name,
-        classid: item.Class.ID,
-        budgetid: item.Budget_Manager.ID
-    }));
+    // ✅ Step 2: Group by composite key (ClassID_BudgetID) and sum months
+    const classArr = Object.values(
+    arrData.reduce((acc, b) => {
+        const key = b.Class.ID + "_" + b.Budget_Manager.ID;
+        if (!acc[key]) {
+        acc[key] = {
+            classId: b.Class.ID,
+            class: b.Class.Class,
+            budgetId: b.Budget_Manager.ID,
+            budgetName: b.Budget_Manager.Name,
+            ...category_months.reduce((m, month) => ({ ...m, [month]: 0 }), {})
+        };
+        }
+        category_months.forEach(month => {
+        acc[key][month] += parseFloat(b[month] || 0);
+        });
+        return acc;
+    }, {})
+    );
 
-    console.log(CoaArr);
+    // ✅ Step 1: Find all month keys dynamically
+    const account_months = Array.from(
+    new Set(
+        arrData.flatMap(obj =>
+        Object.keys(obj).filter(k => !['Class','Budget_Manager','Account_Name'].includes(k))
+        )
+    )
+    );
+
+    // ✅ Step 2: Group by Account + Class + Budget
+    const CoaArr = Object.values(
+    arrData.reduce((acc, b) => {
+        const key = b.Account_Name.ID + "_" + b.Class.ID + "_" + b.Budget_Manager.ID;
+        if (!acc[key]) {
+        acc[key] = {
+            accountId: b.Account_Name.ID,
+            accountName: b.Account_Name.Account_Name,
+            classId: b.Class.ID,
+            class: b.Class.Class,
+            budgetId: b.Budget_Manager.ID,
+            budgetName: b.Budget_Manager.Name,
+            ...account_months.reduce((m, month) => ({ ...m, [month]: 0 }), {})
+        };
+        }
+        account_months.forEach(month => {
+        acc[key][month] += parseFloat(b[month] || 0);
+        });
+        return acc;
+    }, {})
+    );
+
+    // ✅ Step 1: Find all month keys dynamically (exclude fixed keys)
+    const customer_months = Array.from(
+    new Set(
+        arrData.flatMap(obj =>
+        Object.keys(obj).filter(
+            k => !['Class','Budget_Manager','Account_Name','Customer'].includes(k)
+        )
+        )
+    )
+    );
+
+    // ✅ Step 2: Group by Account + Class + Budget + Customer
+    const customerArr = Object.values(
+    arrData.reduce((acc, b) => {
+        const key = 
+        (b.Account_Name?.ID || "NA") + "_" +
+        b.Class.ID + "_" +
+        b.Budget_Manager.ID + "_" +
+        b.Customer;
+
+        if (!acc[key]) {
+        acc[key] = {
+            accountId: b.Account_Name.ID,
+            accountName: b.Account_Name?.Account_Name || null,
+            classId: b.Class.ID,
+            class: b.Class.Class,
+            budgetId: b.Budget_Manager.ID,
+            budgetName: b.Budget_Manager.Name,
+            customer: b.Customer,
+            // initialize all months with 0
+            ...customer_months.reduce((m, month) => ({ ...m, [month]: 0 }), {})
+        };
+        }
+
+        // ✅ Sum month-wise
+        customer_months.forEach(month => {
+        acc[key][month] += parseFloat(b[month] || 0);
+        });
+
+        return acc;
+    }, {})
+    );
 
     // Render budget name with distinct
     BudgetNameArr.forEach(budgetN => {
@@ -47,10 +133,25 @@ function RenderBudgetTable(arrData){
         const budgetRow = document.createElement('tr');
         budgetRow.classList.add('budget-row');
         budgetRow.innerHTML = `
-            <td colspan="14">
-                <div class="budget-name" data-budget-id="${budgetN.id}">
+            <td colspan="4">
+                <div class="budget-name" data-budget-id="${budgetN.id}" data-target="budget-details">
                     <i class="fas fa-chevron-down"></i> ${budgetN.name}
                 </div>
+            </td>
+            <td class="tdfont"> ${(budgetN.January != "0.00") ? formatIndia(budgetN.January) : ""} </td>
+            <td class="tdfont"> ${(budgetN.February != "0.00") ? formatIndia(budgetN.February) : ""} </td>
+            <td class="tdfont"> ${(budgetN.March != "0.00") ? formatIndia(budgetN.March) : ""} </td>
+            <td class="tdfont"> ${(budgetN.April != "0.00") ? formatIndia(budgetN.April) : ""} </td>
+            <td class="tdfont"> ${(budgetN.May != "0.00") ? formatIndia(budgetN.May) : ""} </td>
+            <td class="tdfont"> ${(budgetN.June != "0.00") ? formatIndia(budgetN.June) : ""} </td>
+            <td class="tdfont"> ${(budgetN.July != "0.00") ? formatIndia(budgetN.July) : ""} </td>
+            <td class="tdfont"> ${(budgetN.August != "0.00") ? formatIndia(budgetN.August) : ""} </td>
+            <td class="tdfont"> ${(budgetN.September != "0.00") ? formatIndia(budgetN.September) : ""} </td>
+            <td class="tdfont"> ${(budgetN.October != "0.00") ? formatIndia(budgetN.October) : ""} </td>
+            <td class="tdfont"> ${(budgetN.November != "0.00") ? formatIndia(budgetN.November) : ""} </td>
+            <td class="tdfont"> ${(budgetN.December != "0.00") ? formatIndia(budgetN.December) : ""} </td>
+            <td class="tdfont">
+
             </td>
         `;
         budgetTableBody.appendChild(budgetRow);
@@ -63,121 +164,241 @@ function RenderBudgetTable(arrData){
 
         // Render class name
         // Filter based on the budget ID in this class arr
-        let Class_filtered = classArr.filter(item => item.budgetid === budgetN.id);
+        let Class_filtered = classArr.filter(item => item.budgetId === budgetN.id);
         Class_filtered.forEach(cls_element => {
             const categoryRow = document.createElement('tr');
             categoryRow.classList.add('category-row');
-            categoryRow.setAttribute('data-budget-id', cls_element.budgetid);
+            categoryRow.setAttribute('data-budget-id', cls_element.budgetId);
+            categoryRow.setAttribute('data-category', cls_element.class);
 
             const categoryIcon = cls_element.class === 'REVENUE' ? 
                 '<i class="fas fa-arrow-up" style="color: var(--success-green);"></i>' : 
                 '<i class="fas fa-arrow-down" style="color: var(--danger-red);"></i>';
+            let cat_color = cls_element.class === 'REVENUE'? "style='color: var(--success-green);background-color: #e4e4e4;'" : "style='color: var(--danger-red);background-color: #e4e4e4;'";
 
             categoryRow.innerHTML = `
-                <td></td>
-                <td class="${cls_element.class}-category" data-category="${cls_element.class}">
+                <td style="background-color: #e4e4e4;"></td>
+                <td colspan="3" class="${cls_element.class}-category" style="background-color: #e4e4e4;">
                     ${categoryIcon} ${cls_element.class}
-                </td>                        
-                <td class="amount-cell"></td>
-                <td class="amount-cell"></td>
-                <td class="amount-cell"></td>
-                <td class="amount-cell"></td>
-                <td class="amount-cell"></td>
-                <td class="amount-cell"></td>
-                <td class="amount-cell"></td>
-                <td class="amount-cell"></td>
-                <td class="amount-cell"></td>
-                <td class="amount-cell"></td>
-                <td class="amount-cell"></td>
-                <td class="amount-cell"></td>
+                </td>   
+                <td class="amount-cell" ${cat_color}> ${(cls_element.January != "0.00") ? formatIndia(cls_element.January) : ""} </td>
+                <td class="amount-cell" ${cat_color}> ${(cls_element.February != "0.00") ? formatIndia(cls_element.February) : ""} </td>
+                <td class="amount-cell" ${cat_color}> ${(cls_element.March != "0.00") ? formatIndia(cls_element.March) : ""} </td>
+                <td class="amount-cell" ${cat_color}> ${(cls_element.April != "0.00") ? formatIndia(cls_element.April) : ""} </td>
+                <td class="amount-cell" ${cat_color}> ${(cls_element.May != "0.00") ? formatIndia(cls_element.May) : ""} </td>
+                <td class="amount-cell" ${cat_color}> ${(cls_element.June != "0.00") ? formatIndia(cls_element.June) : ""} </td>
+                <td class="amount-cell" ${cat_color}> ${(cls_element.July != "0.00") ? formatIndia(cls_element.July) : ""} </td>
+                <td class="amount-cell" ${cat_color}> ${(cls_element.August != "0.00") ? formatIndia(cls_element.August) : ""} </td>
+                <td class="amount-cell" ${cat_color}> ${(cls_element.September != "0.00") ? formatIndia(cls_element.September) : ""} </td>
+                <td class="amount-cell" ${cat_color}> ${(cls_element.October != "0.00") ? formatIndia(cls_element.October) : ""} </td>
+                <td class="amount-cell" ${cat_color}> ${(cls_element.November != "0.00") ? formatIndia(cls_element.November) : ""} </td>
+                <td class="amount-cell" ${cat_color}> ${(cls_element.December != "0.00") ? formatIndia(cls_element.December) : ""} </td>      
+                <td class="tdfont"></td>          
             `;
             budgetTableBody.appendChild(categoryRow);
 
             // Add click event to toggle category details
             const categoryCell = categoryRow.querySelector(`.${cls_element.class}-category`);
             categoryCell.addEventListener('click', function() {
-                toggleCategoryDetails(cls_element.budgetid, cls_element.class);
+                toggleCategoryDetails(cls_element.budgetId, cls_element.class);
             });
 
              // Render Account name
             // Filter based on the budget ID and class in this account arr
-            let Account_filtered = CoaArr.filter(item => item.budgetid === cls_element.budgetid && item.classid === cls_element.id);
+            let Account_filtered = CoaArr.filter(item => item.budgetId === cls_element.budgetId && item.classId === cls_element.classId);
             Account_filtered.forEach(Account_element => {
                 const accountRow = document.createElement('tr');
                 accountRow.classList.add('account-row');
-                accountRow.setAttribute('data-budget-id', Account_element.budgetid);
+                accountRow.setAttribute('data-budget-id', Account_element.budgetId);
                 accountRow.setAttribute('data-category', cls_element.class);
-                
+                accountRow.setAttribute('data-account', Account_element.accountId);
+                let accountColor = "style='background:#f5f0eb'";
                 accountRow.innerHTML = `
-                    <td></td>
-                    <td class="${Account_element.accountName}-category">
+                    <td ${accountColor}></td>
+                    <td colspan="3" class="account-td ${"id-"+Account_element.accountId}-category" ${accountColor}>
                         ${Account_element.accountName}
                     </td>                        
-                    <td class="amount-cell"></td>
-                    <td class="amount-cell"></td>
-                    <td class="amount-cell"></td>
-                    <td class="amount-cell"></td>
-                    <td class="amount-cell"></td>
-                    <td class="amount-cell"></td>
-                    <td class="amount-cell"></td>
-                    <td class="amount-cell"></td>
-                    <td class="amount-cell"></td>
-                    <td class="amount-cell"></td>
-                    <td class="amount-cell"></td>
-                    <td class="amount-cell"></td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.January != "0.00") ? formatIndia(Account_element.January) : ""} </td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.February != "0.00") ? formatIndia(Account_element.February) : ""} </td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.March != "0.00") ? formatIndia(Account_element.March) : ""} </td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.April != "0.00") ? formatIndia(Account_element.April) : ""} </td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.May != "0.00") ? formatIndia(Account_element.May) : ""} </td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.June != "0.00") ? formatIndia(Account_element.June) : ""} </td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.July != "0.00") ? formatIndia(Account_element.July) : ""} </td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.August != "0.00") ? formatIndia(Account_element.August) : ""} </td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.September != "0.00") ? formatIndia(Account_element.September) : ""} </td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.October != "0.00") ? formatIndia(Account_element.October) : ""} </td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.November != "0.00") ? formatIndia(Account_element.November) : ""} </td>
+                    <td class="amount-cell" ${accountColor}> ${(Account_element.December != "0.00") ? formatIndia(Account_element.December) : ""} </td>  
+                    <td class="tdfont"></td>
                 `;
                  budgetTableBody.appendChild(accountRow);
 
+                 // Add click event to toggle account details
+                const accCell = accountRow.querySelector(`.${"id-"+Account_element.accountId}-category`);
+                accCell.addEventListener('click', function() {
+                    toggleAccountDetails(cls_element.budgetId, Account_element.accountId);
+                });
+
+                // Render Customer Arr
+                let customer_filtered = customerArr.filter(item => 
+                    item.budgetId === cls_element.budgetId && 
+                    item.classId === cls_element.classId &&
+                    item.accountId === Account_element.accountId 
+                );
+                customer_filtered.forEach(customer_element => {
+                    const customerRow = document.createElement('tr');
+                    customerRow.classList.add('customer-row');
+                    customerRow.setAttribute('data-budget-id', customer_element.budgetId);
+                    customerRow.setAttribute('data-category', cls_element.class);
+                    customerRow.setAttribute('data-account', Account_element.accountId);
+                    let customerrowHTML= `
+                    <td></td>
+                    <td colspan="3" class="customer-td">
+                    <input type="text" class="amount-input-text" value="${customer_element.customer}" 
+                        data-budget-id="${customer_element.budgetId}" 
+                        data-category="${cls_element.class}" 
+                        data-account="${Account_element.accountId}" 
+                        >
+                    </td>`
+                    months.forEach((month, idx) => {
+                    const val = customer_element[month] != "0.00" ? formatIndia(customer_element[month]) : "";
+                    console.log(customer_element.customer +" - "+month+ " - "+val)
+                    customerrowHTML += `
+                        <td class="amount-cell">
+                        <input type="text" class="amount-input"
+                            value="${val}" 
+                            data-budget-id="${customer_element.budgetId}" 
+                            data-category="${cls_element.class}" 
+                            data-account="${Account_element.accountId}" 
+                            data-month="${idx + 1}">
+                        </td>
+                    `;
+                    });
+                    customerrowHTML += `<td class="tdfont"></td>`;
+                    customerRow.innerHTML = customerrowHTML
+
+
+                //     `<td class="amount-cell"> ${(customer_element.February != "0.00") ? formatIndia(customer_element.February) : ""} </td>
+                //     <td class="amount-cell"> ${(customer_element.March != "0.00") ? formatIndia(customer_element.March) : ""} </td>
+                //     <td class="amount-cell"> ${(customer_element.April != "0.00") ? formatIndia(customer_element.April) : ""} </td>
+                //     <td class="amount-cell"> ${(customer_element.May != "0.00") ? formatIndia(customer_element.May) : ""} </td>
+                //     <td class="amount-cell"> ${(customer_element.June != "0.00") ? formatIndia(customer_element.June) : ""} </td>
+                //     <td class="amount-cell"> ${(customer_element.July != "0.00") ? formatIndia(customer_element.July) : ""} </td>
+                //     <td class="amount-cell"> ${(customer_element.August != "0.00") ? formatIndia(customer_element.August) : ""} </td>
+                //     <td class="amount-cell"> ${(customer_element.September != "0.00") ? formatIndia(customer_element.September) : ""} </td>
+                //     <td class="amount-cell"> ${(customer_element.October != "0.00") ? formatIndia(customer_element.October) : ""} </td>
+                //     <td class="amount-cell"> ${(customer_element.November != "0.00") ? formatIndia(customer_element.November) : ""} </td>
+                //     <td class="amount-cell"> ${(customer_element.December != "0.00") ? formatIndia(customer_element.December) : ""} </td>  
+                //     <td class="tdfont"></td>
+                // `;
+                 budgetTableBody.appendChild(customerRow);
+
+                });
             });
-
-
-
         });
     });
+    // addAmountInputListeners()
 }
 
 // Toggle budget details (expand/collapse)
 function toggleBudgetDetails(budgetId) {
-    const budgetRow = document.querySelector(`.budget-name[data-budget-id="${budgetId}"]`).closest('tr');
+    const budgetRow = document.querySelector(`.budget-name[data-budget-id="${budgetId}"]`);
     const icon = budgetRow.querySelector('i');
-    
-    // Toggle icon
-    if (icon.classList.contains('fa-chevron-down')) {
-        icon.classList.remove('fa-chevron-down');
-        icon.classList.add('fa-chevron-up');
-    } else {
-        icon.classList.remove('fa-chevron-up');
-        icon.classList.add('fa-chevron-down');
-    }
-    
-    // Toggle visibility of category rows for this budget
-    const categoryRows = document.querySelectorAll(`tr[data-budget-id="${budgetId}"], tr[data-budget-id="${budgetId}"]`);
-     console.log("categoryRows - ", categoryRows)
-    categoryRows.forEach(row => {
-        row.classList.toggle('collapsed');
-    });
 
-    // Toggle visibility of Account rows for this budget
-    // const accountRows = document.querySelectorAll(`tr[data-budget-id="${budgetId}"]`);
-    // console.log("accountRows = ",accountRows)
-    // accountRows.forEach(row => {
-    //     row.classList.toggle('collapsed');
-    // });
+    // Toggle icon
+    icon.classList.toggle('fa-chevron-down');
+    icon.classList.toggle('fa-chevron-up');
+
+    // Find all rows under this budget
+    const childRows = document.querySelectorAll(`tr[data-budget-id="${budgetId}"]:not(.budget-row)`);
+
+    // If currently expanded → collapse all
+    const isCollapsed = Array.from(childRows).some(row => !row.classList.contains('hidden-budget'));
+
+    if (isCollapsed) {
+        // Collapse everything under this budget
+        childRows.forEach(row => row.classList.add('hidden-budget'));
+    } else {
+        // Expand everything under this budget
+        childRows.forEach(row => row.classList.remove('hidden-budget'));
+    }
 }
 
 // Toggle category details (expand/collapse)
 function toggleCategoryDetails(budgetId, categoryName) {
-    const categoryRow = document.querySelector(`tr[data-budget-id="${budgetId}"] .${categoryName}-category`).closest('tr');
+    const categoryRow = document.querySelector(`tr[data-budget-id="${budgetId}"][data-category="${categoryName}"]`);
     const icon = categoryRow.querySelector('i');
-    
-    // Toggle icon rotation
-    if (icon.classList.contains('fa-arrow-up') || icon.classList.contains('fa-arrow-down')) {
+
+    if (icon) {
         icon.style.transform = icon.style.transform === 'rotate(180deg)' ? 'rotate(0deg)' : 'rotate(180deg)';
     }
-    
-    // Toggle visibility of account rows for this category
-    const accountRows = document.querySelectorAll(`tr[data-budget-id="${budgetId}"][data-category="${categoryName}"]`);
-    accountRows.forEach(row => {
-        row.classList.toggle('collapsed');
-    });
+
+    // Find all rows under this budget
+    const childRowss = document.querySelectorAll(`tr[data-budget-id="${budgetId}"][data-category="${categoryName}"]:not(.category-row)`);
+   
+    // If currently expanded → collapse all
+    const isCollapsed = Array.from(childRowss).some(row => !row.classList.contains('hidden-category'));
+
+    if (isCollapsed) {
+        // Collapse everything under this budget
+        childRowss.forEach(row => row.classList.add('hidden-category'));
+    } else {
+        // Expand everything under this budget
+        childRowss.forEach(row => row.classList.remove('hidden-category'));
+    }
 }
+
+// Toggle Account details (expand/collapse)
+function toggleAccountDetails(budgetId, AccountID) {
+    
+    const customerRows = document.querySelectorAll(
+        `tr[data-budget-id="${budgetId}"][data-account="${AccountID}"].customer-row`
+    );
+    customerRows.forEach(row => row.classList.toggle('collapsed'));
+}
+
+// Formatter: 100000 → "1,00,000"
+function formatIndia(x) {
+    if (!x) return "";
+    return Number(x).toLocaleString('en-IN');
+}
+
+// Parser: "1,00,000" → 100000
+function parseNumber(x) {
+    if (!x) return 0;
+    return parseFloat(x.replace(/,/g, '')) || 0;
+}
+
+// Attach to all .amount-input fields
+document.addEventListener('focusin', e => {
+    if (e.target.classList.contains('amount-input')) {
+        // highlight the parent cell
+        e.target.closest('.amount-cell')?.classList.add('editing');
+
+        const val = parseNumber(e.target.value);
+        e.target.value = val ? val.toFixed(2) : "";
+    }
+    if (e.target.classList.contains('amount-input-text')) e.target.closest('.customer-td')?.classList.add('editing');
+});
+document.addEventListener('focusout', e => {
+    if (e.target.classList.contains('amount-input')) {
+        // remove highlight
+        // e.target.closest('.amount-cell')?.classList.remove('editing');
+
+        const val = parseNumber(e.target.value);
+        e.target.value = val ? formatIndia(val) : "";
+    }
+});
+// Validate only numbers + decimal
+document.addEventListener('input', e => {
+    if (e.target.classList.contains('amount-input')) {
+        const val = e.target.value;
+        // Allow only digits and at most one decimal point
+        if (!/^\d*\.?\d*$/.test(val)) {
+            alert("Only numbers and decimals are allowed!");
+            // Remove last invalid character
+            e.target.value = val.replace(/[^0-9.]/g, '');
+        }
+    }
+});

@@ -213,102 +213,102 @@ function handleAssumptionSubmit(e) {
 
 // Render the budget table
 function renderBudgetTable() {
-    budgetTableBody.innerHTML = '';
+    // budgetTableBody.innerHTML = '';
     
-    sampleData.budgets.forEach(budget => {
-        // Budget name row
-        // const budgetRow = document.createElement('tr');
-        // budgetRow.classList.add('budget-row');
-        // budgetRow.innerHTML = `
-        //     <td colspan="14">
-        //         <div class="budget-name" data-budget-id="${budget.id}">
-        //             <i class="fas fa-chevron-down"></i> ${budget.name}
-        //         </div>
-        //     </td>
-        // `;
-        // budgetTableBody.appendChild(budgetRow);
+    // sampleData.budgets.forEach(budget => {
+    //     // Budget name row
+    //     // const budgetRow = document.createElement('tr');
+    //     // budgetRow.classList.add('budget-row');
+    //     // budgetRow.innerHTML = `
+    //     //     <td colspan="14">
+    //     //         <div class="budget-name" data-budget-id="${budget.id}">
+    //     //             <i class="fas fa-chevron-down"></i> ${budget.name}
+    //     //         </div>
+    //     //     </td>
+    //     // `;
+    //     // budgetTableBody.appendChild(budgetRow);
         
-        // Add click event to toggle budget details
-        // const budgetNameDiv = budgetRow.querySelector('.budget-name');
-        // budgetNameDiv.addEventListener('click', function() {
-        //     toggleBudgetDetails(budget.id);
-        // });
+    //     // Add click event to toggle budget details
+    //     // const budgetNameDiv = budgetRow.querySelector('.budget-name');
+    //     // budgetNameDiv.addEventListener('click', function() {
+    //     //     toggleBudgetDetails(budget.id);
+    //     // });
         
-        // Category rows
-        // budget.categories.forEach(category => {
-        //     // Category header row
-        //     const categoryRow = document.createElement('tr');
-        //     categoryRow.classList.add('category-row');
-        //     categoryRow.setAttribute('data-budget-id', budget.id);
+    //     // Category rows
+    //     // budget.categories.forEach(category => {
+    //     //     // Category header row
+    //     //     const categoryRow = document.createElement('tr');
+    //     //     categoryRow.classList.add('category-row');
+    //     //     categoryRow.setAttribute('data-budget-id', budget.id);
             
-        //     const categoryIcon = category.type === 'income' ? 
-        //         '<i class="fas fa-arrow-up" style="color: var(--success-green);"></i>' : 
-        //         '<i class="fas fa-arrow-down" style="color: var(--danger-red);"></i>';
+    //     //     const categoryIcon = category.type === 'income' ? 
+    //     //         '<i class="fas fa-arrow-up" style="color: var(--success-green);"></i>' : 
+    //     //         '<i class="fas fa-arrow-down" style="color: var(--danger-red);"></i>';
             
-        //     categoryRow.innerHTML = `
-        //         <td></td>
-        //         <td class="${category.type}-category" data-category="${category.name}">
-        //             ${categoryIcon} ${category.name}
-        //         </td>                        
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 0)}</td>
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 1)}</td>
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 2)}</td>
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 3)}</td>
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 4)}</td>
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 5)}</td>
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 6)}</td>
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 7)}</td>
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 8)}</td>
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 9)}</td>
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 10)}</td>
-        //         <td class="amount-cell">${calculateCategoryTotal(category, 11)}</td>
-        //     `;
-        //     budgetTableBody.appendChild(categoryRow);
+    //     //     categoryRow.innerHTML = `
+    //     //         <td></td>
+    //     //         <td class="${category.type}-category" data-category="${category.name}">
+    //     //             ${categoryIcon} ${category.name}
+    //     //         </td>                        
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 0)}</td>
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 1)}</td>
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 2)}</td>
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 3)}</td>
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 4)}</td>
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 5)}</td>
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 6)}</td>
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 7)}</td>
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 8)}</td>
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 9)}</td>
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 10)}</td>
+    //     //         <td class="amount-cell">${calculateCategoryTotal(category, 11)}</td>
+    //     //     `;
+    //     //     budgetTableBody.appendChild(categoryRow);
             
-            // // Add click event to toggle category details
-            // const categoryCell = categoryRow.querySelector(`.${category.type}-category`);
-            // categoryCell.addEventListener('click', function() {
-            //     toggleCategoryDetails(budget.id, category.name);
-            // });
+    //         // // Add click event to toggle category details
+    //         // const categoryCell = categoryRow.querySelector(`.${category.type}-category`);
+    //         // categoryCell.addEventListener('click', function() {
+    //         //     toggleCategoryDetails(budget.id, category.name);
+    //         // });
             
-            // Account rows
-            category.accounts.forEach(account => {
-                const accountRow = document.createElement('tr');
-                accountRow.classList.add('account-row');
-                accountRow.setAttribute('data-budget-id', budget.id);
-                accountRow.setAttribute('data-category', category.name);
+    //         // Account rows
+    //         // category.accounts.forEach(account => {
+    //         //     const accountRow = document.createElement('tr');
+    //         //     accountRow.classList.add('account-row');
+    //         //     accountRow.setAttribute('data-budget-id', budget.id);
+    //         //     accountRow.setAttribute('data-category', category.name);
                 
-                let accountCells = `
-                    <td></td>
-                    <td class="account-name">${account.name}</td>
-                `;
+    //         //     let accountCells = `
+    //         //         <td></td>
+    //         //         <td class="account-name">${account.name}</td>
+    //         //     `;
                 
-                // Create amount cells for each month
-                for (let i = 0; i < 12; i++) {
-                    if (account.amounts[i] === null) {
-                        accountCells += `<td class="amount-cell disabled-amount">-</td>`;
-                    } else {
-                        accountCells += `
-                            <td class="amount-cell">
-                                <input type="number" class="amount-input" value="${account.amounts[i]}" 
-                                        data-budget-id="${budget.id}" 
-                                        data-category="${category.name}" 
-                                        data-account="${account.name}" 
-                                        data-month="${i}">
-                                <div class="amount-actions">
-                                    <button class="btn-amount btn-confirm"><i class="fas fa-check"></i></button>
-                                    <button class="btn-amount btn-cancel"><i class="fas fa-times"></i></button>
-                                </div>
-                            </td>
-                        `;
-                    }
-                }
+    //         //     // Create amount cells for each month
+    //         //     for (let i = 0; i < 12; i++) {
+    //         //         if (account.amounts[i] === null) {
+    //         //             accountCells += `<td class="amount-cell disabled-amount">-</td>`;
+    //         //         } else {
+    //         //             accountCells += `
+    //         //                 <td class="amount-cell">
+    //         //                     <input type="number" class="amount-input" value="${account.amounts[i]}" 
+    //         //                             data-budget-id="${budget.id}" 
+    //         //                             data-category="${category.name}" 
+    //         //                             data-account="${account.name}" 
+    //         //                             data-month="${i}">
+    //         //                     <div class="amount-actions">
+    //         //                         <button class="btn-amount btn-confirm"><i class="fas fa-check"></i></button>
+    //         //                         <button class="btn-amount btn-cancel"><i class="fas fa-times"></i></button>
+    //         //                     </div>
+    //         //                 </td>
+    //         //             `;
+    //         //         }
+    //         //     }
                 
-                accountRow.innerHTML = accountCells;
-                budgetTableBody.appendChild(accountRow);
-            });
-        });
-    });
+    //         //     accountRow.innerHTML = accountCells;
+    //         //     budgetTableBody.appendChild(accountRow);
+    //         // });
+    //     });
+    // });
     
     // Add event listeners to amount inputs
     addAmountInputListeners();
