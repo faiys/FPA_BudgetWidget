@@ -13,6 +13,12 @@
   </head>
   <body>
       <div class="container-fluid">
+
+         <!-- loader -->
+        <div id="loader" class="loader-overlay" style="display: none;">
+            <div class="loader"></div>
+        </div>
+
        <!-- Header Card -->
         <div class="header-card">
             <div class="d-flex justify-content-between align-items-center">
@@ -121,6 +127,8 @@
             </form>
         </div>
         
+        <div class="error-msg" id="error-msdid"></div>
+
         <!-- Data Table -->
         <div class="data-table-container">
             <div class="table-responsive">

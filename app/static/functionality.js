@@ -3,8 +3,8 @@ const months = ['January','February','March','April','May','June','July','August
 // Render budget Table
 function RenderBudgetTable(arrData){
     budgetTableBody.innerHTML = '';
-    // arrData.sort((a, b) => b.Year_field - a.Year_field);
-    console.log("arrData - ",arrData);
+    arrData.sort((a, b) => b.Year_field - a.Year_field);
+    // console.log("arrData - ",arrData);
 
     // Step 1: Sum month-wise by Budget_Manager.ID
     const BudgetNameArr = Object.values(
@@ -113,11 +113,12 @@ function RenderBudgetTable(arrData){
             budgetId: b.Budget_Manager.ID,
             budgetName: b.Budget_Manager.Name,
             customer: b.Customer,
+            item_id : b.ID,
             // initialize all months with 0
             ...customer_months.reduce((m, month) => ({ ...m, [month]: 0 }), {})
         };
         }
-
+        
         // ✅ Sum month-wise
         customer_months.forEach(month => {
         acc[key][month] += parseFloat(b[month] || 0);
@@ -126,7 +127,6 @@ function RenderBudgetTable(arrData){
         return acc;
     }, {})
     );
-
     // Render budget name with distinct
     BudgetNameArr.forEach(budgetN => {
         // Budget name row
@@ -252,6 +252,9 @@ function RenderBudgetTable(arrData){
                     customerRow.setAttribute('data-budget-id', customer_element.budgetId);
                     customerRow.setAttribute('data-category', cls_element.class);
                     customerRow.setAttribute('data-account', Account_element.accountId);
+                    customerRow.setAttribute('data-itemid', customer_element.item_id);
+                    // customerRow.dataset.customerData = JSON.stringify(customer_element); // store full object
+                    
                     let customerrowHTML= `
                     <td></td>
                     <td colspan="3" class="customer-td">
@@ -263,42 +266,34 @@ function RenderBudgetTable(arrData){
                     </td>`
                     months.forEach((month, idx) => {
                     const val = customer_element[month] != "0.00" ? formatIndia(customer_element[month]) : "";
-                    console.log(customer_element.customer +" - "+month+ " - "+val)
                     customerrowHTML += `
                         <td class="amount-cell">
                         <input type="text" class="amount-input"
                             value="${val}" 
                             data-budget-id="${customer_element.budgetId}" 
                             data-category="${cls_element.class}" 
-                            data-account="${Account_element.accountId}" 
+                            data-account="${Account_element.accountId}"
                             data-month="${idx + 1}">
                         </td>
                     `;
                     });
-                    customerrowHTML += `<td class="tdfont"></td>`;
+                    customerrowHTML += `<td class="amount-cell">
+                        <div class="action-icons">
+                            <div class="approve-reject">
+                                
+                            </div>
+                            <div class="remove">
+                                <i class="fa fa-trash" title="Remove Item" onclick="DeleteRecordByID('Budget_Manager_Items_Js', '${customer_element.item_id}')"></i>
+                            </div>
+                        </div>
+                    </td>`;
                     customerRow.innerHTML = customerrowHTML
-
-
-                //     `<td class="amount-cell"> ${(customer_element.February != "0.00") ? formatIndia(customer_element.February) : ""} </td>
-                //     <td class="amount-cell"> ${(customer_element.March != "0.00") ? formatIndia(customer_element.March) : ""} </td>
-                //     <td class="amount-cell"> ${(customer_element.April != "0.00") ? formatIndia(customer_element.April) : ""} </td>
-                //     <td class="amount-cell"> ${(customer_element.May != "0.00") ? formatIndia(customer_element.May) : ""} </td>
-                //     <td class="amount-cell"> ${(customer_element.June != "0.00") ? formatIndia(customer_element.June) : ""} </td>
-                //     <td class="amount-cell"> ${(customer_element.July != "0.00") ? formatIndia(customer_element.July) : ""} </td>
-                //     <td class="amount-cell"> ${(customer_element.August != "0.00") ? formatIndia(customer_element.August) : ""} </td>
-                //     <td class="amount-cell"> ${(customer_element.September != "0.00") ? formatIndia(customer_element.September) : ""} </td>
-                //     <td class="amount-cell"> ${(customer_element.October != "0.00") ? formatIndia(customer_element.October) : ""} </td>
-                //     <td class="amount-cell"> ${(customer_element.November != "0.00") ? formatIndia(customer_element.November) : ""} </td>
-                //     <td class="amount-cell"> ${(customer_element.December != "0.00") ? formatIndia(customer_element.December) : ""} </td>  
-                //     <td class="tdfont"></td>
-                // `;
-                 budgetTableBody.appendChild(customerRow);
+                    budgetTableBody.appendChild(customerRow);
 
                 });
             });
         });
     });
-    // addAmountInputListeners()
 }
 
 // Toggle budget details (expand/collapse)
@@ -371,25 +366,131 @@ function parseNumber(x) {
 }
 
 // Attach to all .amount-input fields
-document.addEventListener('focusin', e => {
-    if (e.target.classList.contains('amount-input')) {
-        // highlight the parent cell
-        e.target.closest('.amount-cell')?.classList.add('editing');
+// document.addEventListener('focusin', e => {
+//     if (e.target.classList.contains('amount-input')) {
+//         e.target.closest('.amount-cell')?.classList.add('editing');
 
+//         const val = parseNumber(e.target.value);
+//         e.target.value = val ? val.toFixed(2) : "";
+//     }
+//     if (e.target.classList.contains('amount-input-text')) 
+//         e.target.closest('.customer-td')?.classList.add('editing');
+
+//     // Show action icons for the row being edited
+//     const editingCells = document.querySelectorAll('.editing');
+//     editingCells.forEach(cell => {
+//         const rowAction = cell.closest('tr')?.querySelector('.approve-reject');
+//         if (rowAction) {
+//             let itemId = cell.closest('tr')?.dataset.itemid; // grab ID from row
+//             rowAction.innerHTML = `
+//                 <i class="fa fa-check" title="Update" style="color: green;" 
+//                     onclick="UpdateRecordByID('Budget_Manager_Items_Js', '${itemId}', '${JSON.stringify(window.customer_filtered)}')"></i>
+//                 <i class="fa fa-times" title="Cancel" style="color: red;" onclick="cancelRow(this)"></i>
+//             `;
+//         }
+//     });
+// });
+
+document.addEventListener('focusin', e => {
+    const cell = e.target.closest('.amount-cell, .customer-td');
+    if (!cell) return;
+
+    if (e.target.classList.contains('amount-input')) {
+        cell.classList.add('editing');
         const val = parseNumber(e.target.value);
         e.target.value = val ? val.toFixed(2) : "";
     }
-    if (e.target.classList.contains('amount-input-text')) e.target.closest('.customer-td')?.classList.add('editing');
-});
-document.addEventListener('focusout', e => {
-    if (e.target.classList.contains('amount-input')) {
-        // remove highlight
-        // e.target.closest('.amount-cell')?.classList.remove('editing');
 
-        const val = parseNumber(e.target.value);
-        e.target.value = val ? formatIndia(val) : "";
+    if (e.target.classList.contains('amount-input-text')) {
+        cell.classList.add('editing');
     }
+
+    // Show action icons for all editing cells
+    const editingCells = document.querySelectorAll('.editing');
+    editingCells.forEach(editCell => {
+        const row = editCell.closest('tr');
+        const rowAction = row.querySelector('.approve-reject');
+        if (!rowAction) return;
+
+        // Clear previous buttons
+        rowAction.innerHTML = "";
+
+        // Get row-specific data
+        // const itemId = row.dataset.itemid;
+        // const customerData = JSON.parse(row.dataset.customerData); // row’s customer object
+
+        // Create buttons
+        const updateBtn = document.createElement('i');
+        updateBtn.className = 'fa fa-check update-btn';
+        updateBtn.title = 'Update';
+        updateBtn.style.color = 'green';
+
+        const cancelBtn = document.createElement('i');
+        cancelBtn.className = 'fa fa-times cancel-btn';
+        cancelBtn.title = 'Cancel';
+        cancelBtn.style.color = 'red';
+
+        // Append buttons
+        rowAction.appendChild(updateBtn);
+        rowAction.appendChild(cancelBtn);
+
+        // Add event listeners
+        updateBtn.addEventListener('click', () => {
+             const updatedCustomerData = {};
+
+            // Customer name
+            const customerInput = row.querySelector('.amount-input-text');
+            updatedCustomerData.Customer = customerInput.value;
+
+            // Months (Jan–Dec)
+            months.forEach((month, idx) => {
+                const monthInput = row.querySelector(`.amount-cell input[data-month="${idx+1}"]`);
+                updatedCustomerData[month] = parseNumber(monthInput.value) || "0";
+            });
+
+            UpdateRecordByID('Budget_Manager_Items_Js', row.dataset.itemid, updatedCustomerData);
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            cancelRow(cancelBtn);
+        });
+    });
 });
+
+
+// New function to trigger focusout on the row
+function cancelRow(icon) {
+    const row = icon.closest('tr');
+
+    // Find all inputs in that row
+    const inputs = row.querySelectorAll('.amount-input, .amount-input-text');
+    inputs.forEach(input => {
+        // Remove the editing class
+        input.closest('.amount-cell')?.classList.remove('editing');
+        input.closest('.customer-td')?.classList.remove('editing');
+
+        // Trigger focusout logic manually
+        const val = parseNumber(input.value);
+        if (input.classList.contains('amount-input')) {
+            input.value = val ? formatIndia(val) : "";
+        }
+    });
+
+    // Optionally, remove the action icons
+    const rowAction = row.querySelector('.approve-reject');
+    if (rowAction) rowAction.innerHTML = "";
+}
+
+// document.addEventListener('focusout', e => {
+//     if (e.target.classList.contains('amount-input')) {
+//         // remove highlight
+//         // e.target.closest('.amount-cell')?.classList.remove('editing');
+
+//         const val = parseNumber(e.target.value);
+//         e.target.value = val ? formatIndia(val) : "";
+//     }
+// });
+
 // Validate only numbers + decimal
 document.addEventListener('input', e => {
     if (e.target.classList.contains('amount-input')) {
@@ -402,3 +503,16 @@ document.addEventListener('input', e => {
         }
     }
 });
+
+
+// Message Text
+function errorMsg(text, color){
+    error_msg.innerHTML = text
+    error_msg.style.display = "block";
+    error_msg.style.color = color;
+
+    setTimeout(() => {
+        error_msg.innerHTML = "";
+        error_msg.style.display = "none"; // hide again after 2 sec
+    }, 5000);
+}

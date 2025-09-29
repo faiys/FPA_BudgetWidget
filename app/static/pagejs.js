@@ -1,3 +1,6 @@
+// Onload run fetch data
+// window.onload = LoaderPage();
+
 // Sample data for the budget table
 const sampleData = {
     budgets: [
@@ -311,7 +314,7 @@ function renderBudgetTable() {
     // });
     
     // Add event listeners to amount inputs
-    addAmountInputListeners();
+    // addAmountInputListeners();
 }
 
 // Calculate total for a category in a specific month
@@ -329,46 +332,46 @@ function calculateCategoryTotal(category, monthIndex) {
 
 
 // Add event listeners to amount inputs
-function addAmountInputListeners() {
-    const amountInputs = document.querySelectorAll('.amount-input');
-    amountInputs.forEach(input => {
-        input.addEventListener('focus', function() {
-            this.parentElement.querySelector('.amount-actions').style.opacity = '1';
-        });
+// function addAmountInputListeners() {
+//     const amountInputs = document.querySelectorAll('.amount-input');
+//     amountInputs.forEach(input => {
+//         input.addEventListener('focus', function() {
+//             this.parentElement.querySelector('.amount-actions').style.opacity = '1';
+//         });
         
-        input.addEventListener('blur', function() {
-            // Hide actions after a delay to allow button clicks
-            setTimeout(() => {
-                this.parentElement.querySelector('.amount-actions').style.opacity = '0';
-            }, 200);
-        });
+//         input.addEventListener('blur', function() {
+//             // Hide actions after a delay to allow button clicks
+//             setTimeout(() => {
+//                 this.parentElement.querySelector('.amount-actions').style.opacity = '0';
+//             }, 200);
+//         });
         
-        // Confirm button
-        const confirmBtn = input.parentElement.querySelector('.btn-confirm');
-        confirmBtn.addEventListener('click', function() {
-            updateAmount(input);
-            input.parentElement.querySelector('.amount-actions').style.opacity = '0';
-        });
+//         // Confirm button
+//         const confirmBtn = input.parentElement.querySelector('.btn-confirm');
+//         confirmBtn.addEventListener('click', function() {
+//             updateAmount(input);
+//             input.parentElement.querySelector('.amount-actions').style.opacity = '0';
+//         });
         
-        // Cancel button
-        const cancelBtn = input.parentElement.querySelector('.btn-cancel');
-        cancelBtn.addEventListener('click', function() {
-            // Reset to original value
-            const budgetId = input.getAttribute('data-budget-id');
-            const category = input.getAttribute('data-category');
-            const account = input.getAttribute('data-account');
-            const month = parseInt(input.getAttribute('data-month'));
+//         // Cancel button
+//         const cancelBtn = input.parentElement.querySelector('.btn-cancel');
+//         cancelBtn.addEventListener('click', function() {
+//             // Reset to original value
+//             const budgetId = input.getAttribute('data-budget-id');
+//             const category = input.getAttribute('data-category');
+//             const account = input.getAttribute('data-account');
+//             const month = parseInt(input.getAttribute('data-month'));
             
-            // Find the original value
-            const budget = sampleData.budgets.find(b => b.id == budgetId);
-            const categoryObj = budget.categories.find(c => c.name === category);
-            const accountObj = categoryObj.accounts.find(a => a.name === account);
+//             // Find the original value
+//             const budget = sampleData.budgets.find(b => b.id == budgetId);
+//             const categoryObj = budget.categories.find(c => c.name === category);
+//             const accountObj = categoryObj.accounts.find(a => a.name === account);
             
-            input.value = accountObj.amounts[month];
-            input.parentElement.querySelector('.amount-actions').style.opacity = '0';
-        });
-    });
-}
+//             input.value = accountObj.amounts[month];
+//             input.parentElement.querySelector('.amount-actions').style.opacity = '0';
+//         });
+//     });
+// }
 
 // Update amount in the data model
 function updateAmount(input) {
@@ -400,3 +403,20 @@ function updateCategoryTotals(budgetId, categoryName, monthIndex) {
     const totalCell = categoryRow.querySelectorAll('.amount-cell')[monthIndex];
     totalCell.textContent = total === '0' ? '-' : total;
 }
+
+// // Loader
+// function showLoader() {
+//   document.getElementById("loader").style.display = "flex";
+// }
+
+// function hideLoader() {
+//   document.getElementById("loader").style.display = "none";
+// }
+// function LoaderPage() {
+//   showLoader();
+//   // Simulate an async operation (e.g., API call)
+//   setTimeout(() => {
+//     console.log("Data loaded.");
+//     hideLoader();
+//   }, 5000);
+// }
