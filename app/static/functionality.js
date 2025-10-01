@@ -605,13 +605,4 @@ function errorMsg(text, color){
         error_msg.style.display = "none"; // hide again after 2 sec
     }, 5000);
 }
-// New Modal budget Popups
-document.getElementById("openBudget").addEventListener("click", (e) => {
-  e.preventDefault();
-  document.getElementById("BudgetModal").style.display = "flex";
-});
-
-document.getElementById("closeBudget").addEventListener("click", () => {
-  document.getElementById("BudgetModal").style.display = "none";
-});
 

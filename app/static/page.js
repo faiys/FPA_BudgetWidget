@@ -20,6 +20,18 @@ function subMonth(n) {
 // console.log(prevMonth.getMonth() + 1); // number (1-12)
 // console.log(prevMonth.toLocaleString('default', { month: 'long' })); // full nam
 
+
+
+// New Modal budget Popups
+document.getElementById("openBudget").addEventListener("click", (e) => {
+  e.preventDefault();
+  document.getElementById("BudgetModal").style.display = "flex";
+});
+
+document.getElementById("closeBudget").addEventListener("click", () => {
+  document.getElementById("BudgetModal").style.display = "none";
+});
+
 // Add Budget popup Function to populate years dynamically
 function populateYears(startYear, numYears) {
   yearSelect.innerHTML = ''; // Clear existing options
@@ -84,8 +96,7 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
   {
     last3Month = currentMonth_No;
   }
-  console.log(currentMonth_No, last3Month)
-  
+   
   months.forEach((Month_Name, monthIdx) => {
     // 		Last 3 month month name
 		if(monthIdx + 1 >= last3Month && monthIdx < currentMonth_No)
@@ -93,8 +104,37 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
 			last3Month_List.push(Month_Name);
 		}
   });
-  console.log(last3Month_List)
+  // console.log(last3Month_List)
 
-  // let pnlArrData = await fetch(ReportName, recordCursor, last3Month_List)
-  // console.log(pnlArrData)
+  // let pnlLast3MonthArr = await fetch(ReportName, recordCursor, last3Month_List)
+  let pnlNowyearArr = await fetch(ReportName, recordCursor, [])
+  let cosArrData = await fetch("COA_Report", recordCursor, []);
+
+  // Use Map to get unique Class objects
+  const distinctClassesMap = new Map();
+  cosArrData.forEach(acc => {
+    const key = acc.Class.ID + "_" + acc.Class.Class; 
+    if (!distinctClassesMap.has(key)) {
+      distinctClassesMap.set(key, acc.Class);
+    }
+  });
+  const distinctClasses = Array.from(distinctClassesMap.values());
+  console.log(distinctClasses);
+
+  // get pnl uniq Account name and check coa arr for getting active account name
+  const pnlAccountSet = new Set(pnlNowyearArr.map(item => item.Account_Name));
+  const matchedCOA = cosArrData.filter(coa => pnlAccountSet.has(coa.Account_Name));
+  console.log(matchedCOA);
+
+  // Add unique Transaction_Details to each matched COA
+  const coaWithTransactions = matchedCOA.map(coa => {
+    const relatedPNL = pnlNowyearArr.filter(pnl => pnl.Account_Name === coa.Account_Name);
+    const transactionDetails = [...new Set(relatedPNL.map(item => item.Transaction_Details))];
+    return {
+      ...coa,
+      Transaction_Details: transactionDetails
+    };
+  });
+  console.log(coaWithTransactions);
+
 }

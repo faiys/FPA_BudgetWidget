@@ -5,20 +5,23 @@ const error_msg = document.getElementById("error-msdid");
 
 // Onload run fetch data
 document.addEventListener("DOMContentLoaded", () => {
-//  RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr)
+ RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr)
  AddBudget('PnL_Raw_Report', '', AllFetchArr=[])
 });
 
 // Fetch Records
 async function fetch(ReportName, recordCursor, AllFetchArr){
     try{
-        
         let criteriaVar = "";
-        if(ReportName === "COA_Report"){
+        if(ReportName === "COA_Report" && AllFetchArr.length  === 0){
             criteriaVar = "(Class.Class != \"EQUITY\" && Class.Class != \"LIABILITY\" && Class.Class != \"ASSET\" && Status == \"ACTIVE\")"
         }
-        else if(ReportName === "PnL_Raw_Report"){
-            criteriaVar = "(Class.Class != \"EQUITY\" && Class.Class != \"LIABILITY\" && Class.Class != \"ASSET\" && Status == \"ACTIVE\")"
+        // else if(ReportName === "PnL_Raw_Report" && AllFetchArr.length > 0){
+        //     criteriaVar = `(Year_field == \"${currentYear}\" && Month_field == \"${AllFetchArr[0]}\" || Month_field == \"${AllFetchArr[1]}\" || Month_field == \"${AllFetchArr[2]}\")`
+        //     AllFetchArr=[];
+        // }
+        else if(ReportName === "PnL_Raw_Report" && AllFetchArr.length  === 0){
+            criteriaVar = `(Year_field == \"${currentYear}\")`
         }
          var config = {
             app_name: AppName,
@@ -40,13 +43,6 @@ async function fetch(ReportName, recordCursor, AllFetchArr){
                     let Arr_merged = AllFetchArr.flat();
                     console.log(Arr_merged)
                     return Arr_merged;
-                    // if(ReportName === "Budget_Manager_Items_Js"){
-                    //     console.log(Arr_merged)
-                        
-                    // }
-                    // else if(ReportName === "COA_Report"){
-                    //     AddBudget(AllFetchArr)
-                    // }
                 }
             }
             else{
@@ -95,11 +91,12 @@ function UpdateRecordByID(ReportName,RecID, customer_Arr){
             };
         ZOHO.CREATOR.DATA.updateRecordById(UpdateRec_config).then(function (Update_response) {
             if (Update_response.code == 3000) {
-                 let AllFetchArr = [];
-                fetch("Budget_Manager_Items_Js", "",AllFetchArr)
-
+                let AllFetchArr = [];
+                RenderBudgetTable("Budget_Manager_Items_Js", "", AllFetchArr);
+                
                 // Submit Response
                 errorMsg("Item Updated.", "green")
+
             } 
             else{
                 console.log("Update rec error = ",Update_response)
@@ -124,7 +121,7 @@ function DeleteRecordByID(ReportName, RecID){
         ZOHO.CREATOR.DATA.deleteRecordById(Deleteconfig).then(function (Delete_response) {
         if (Delete_response.code == 3000) {
             let AllFetchArr = [];
-            fetch("Budget_Manager_Items_Js", "",AllFetchArr)
+            RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr)
 
             // Submit Response
             errorMsg("Item Deleted.", "green")
@@ -141,7 +138,6 @@ function DeleteRecordByID(ReportName, RecID){
 
 // Post API
 function POSTRecord(FormName, customer_Arr){
-    console.log("customerArr - ",customer_Arr)
     let payload = "";
     try{
         if(FormName === "Budget_Manager_Items" && customer_Arr){
@@ -173,10 +169,10 @@ function POSTRecord(FormName, customer_Arr){
             form_name: FormName,
             payload: payload
         };
-        ZOHO.CREATOR.DATA.addRecords(postRec_config).then(function () {
+        ZOHO.CREATOR.DATA.addRecords(postRec_config).then(function (post_response) {
             if (post_response.code == 3000) {
                 let AllFetchArr = [];
-                fetch("Budget_Manager_Items_Js", "",AllFetchArr)
+                RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr)
                 
                 // Submit Response
                 errorMsg("Item Added.", "green")
