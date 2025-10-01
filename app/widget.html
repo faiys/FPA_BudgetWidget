@@ -14,12 +14,7 @@
   <body>
       <div class="container-fluid">
 
-         <!-- loader -->
-        <div id="loader" class="loader-overlay" style="display: none;">
-            <div class="loader"></div>
-        </div>
-
-       <!-- Header Card -->
+        <!-- Header Card -->
         <div class="header-card">
             <div class="d-flex justify-content-between align-items-center">
                 <h1><i class="fas fa-chart-pie me-2"></i> Budget Management</h1>
@@ -33,102 +28,75 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Add Budget Form -->
-        <div class="form-container" id="budgetForm">
-            <div class="form-header">
-                <h3 class="form-title">Add New Budget</h3>
-                <button class="close-btn" id="closeBudgetForm">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="budgetFormContent">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="year" class="form-label">Year</label>
-                        <select class="form-control" id="year">
-                            <option value="">Select Year</option>
-                            <option value="2023">2023</option>
-                            <option value="2024" selected>2024</option>
-                            <option value="2025">2025</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="startMonth" class="form-label">Start Month</label>
-                        <select class="form-control" id="startMonth">
-                            <option value="">Select Month</option>
-                            <option value="0">January</option>
-                            <option value="1">February</option>
-                            <option value="2">March</option>
-                            <option value="3">April</option>
-                            <option value="4">May</option>
-                            <option value="5">June</option>
-                            <option value="6">July</option>
-                            <option value="7">August</option>
-                            <option value="8">September</option>
-                            <option value="9">October</option>
-                            <option value="10">November</option>
-                            <option value="11">December</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="period" class="form-label">Period</label>
-                        <select class="form-control" id="period">
-                            <option value="3">3 Months</option>
-                            <option value="6">6 Months</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="budgetName" class="form-label">Budget Name</label>
-                        <input type="text" class="form-control" id="budgetName" placeholder="Enter budget name">
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-submit">
-                    <i class="fas fa-check"></i> Add Budget
-                </button>
-            </form>
-        </div>
-        
-        <!-- Add Assumption Form -->
-        <div class="form-container" id="assumptionForm">
-            <div class="form-header">
-                <h3 class="form-title">Add New Assumption</h3>
-                <button class="close-btn" id="closeAssumptionForm">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <form id="assumptionFormContent">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="assumptionYear" class="form-label">Year</label>
-                        <select class="form-control" id="assumptionYear">
-                            <option value="">Select Year</option>
-                            <option value="2023">2023</option>
-                            <option value="2024" selected>2024</option>
-                            <option value="2025">2025</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="assumptionType" class="form-label">Assumption Type</label>
-                        <select class="form-control" id="assumptionType">
-                            <option value="inflation">Inflation Rate</option>
-                            <option value="growth">Growth Rate</option>
-                            <option value="exchange">Exchange Rate</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="assumptionValue" class="form-label">Value (%)</label>
-                        <input type="number" class="form-control" id="assumptionValue" placeholder="Enter value">
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-submit">
-                    <i class="fas fa-check"></i> Add Assumption
-                </button>
-            </form>
-        </div>
-        
+        <!-- Show add and error message -->
         <div class="error-msg" id="error-msdid"></div>
+        <!-- Click actions  -->
+        <div class="new-modal">
+             <!-- Populate next 3 years starting from 2025 if current year < 2025 -->
+            <a href="#" class="modal-link"  id="openBudget" onclick="populateYears(2024, 4);">
+                <i class="fa fa-plus"></i> Add Budget
+            </a>
+            <!-- Budget Modal -->
+            <div id="BudgetModal" class="budget-modal">
+                <div class="budgetmodal-content">
+                    <h4>Budget</h4>
+                    <!-- Error message container -->
+                    <div id="budgetError" style="color:red; margin-bottom:10px; display:none;"></div>
+                    <div class="form-grid">
+                    <div class="form-group">
+                        <label for="budgetName">Name</label>
+                        <input type="text" id="budgetName" placeholder="Enter name">
+                    </div>
 
+                    <div class="form-group">
+                        <label for="budgetYear">Year</label>
+                        <select id="budgetYear">
+                        <option>Select year</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="startMonth">Start Month</label>
+                        <select id="startMonth">
+                        <option>January</option>
+                        <option>February</option>
+                        <option>March</option>
+                        <option>April</option>
+                        <option>May</option>
+                        <option>June</option>
+                        <option>July</option>
+                        <option>August</option>
+                        <option>September</option>
+                        <option>October</option>
+                        <option>November</option>
+                        <option>December</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="period">Period</label>
+                        <select id="period">
+                        <option>Monthly</option>
+                        <option>3 Months</option>
+                        <option>6 Months</option>
+                        </select>
+                    </div>
+                    </div>
+
+                    <div class="budgetmodal-actions">
+                    <button class="btn primary" onclick="AddBudget('COA_Report', '', AllFetchArr=[])">Add</button>
+                    <button class="btn cancel" id="closeBudget">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="modal-link">
+                <i class="fa fa-history"></i> Pre-fill from Previous Years' Actuals
+            </a>
+            <a href="#" class="modal-link">
+                <i class="fa fa-lightbulb"></i> Add Assumption
+             </a>
+        </div>
+        
         <!-- Data Table -->
         <div class="data-table-container">
             <div class="table-responsive">
@@ -245,7 +213,7 @@
     <div class="overlay" id="overlay"></div>
 
   </body>
-  <script src="static/pagejs.js"></script>
+  <script src="static/page.js"></script>
   <script src="static/functionality.js"></script>
   <script src="static/zoho.js"></script>
 </html>

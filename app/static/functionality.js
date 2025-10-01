@@ -1,7 +1,9 @@
 const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const accountColor = "style='background:#f5f0eb'";
 
 // Render budget Table
-function RenderBudgetTable(arrData){
+async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
+    const arrData = await fetch(ReportName, recordCursor, AllFetchArr);
     budgetTableBody.innerHTML = '';
     arrData.sort((a, b) => b.Year_field - a.Year_field);
     // console.log("arrData - ",arrData);
@@ -14,6 +16,7 @@ function RenderBudgetTable(arrData){
         acc[budgetId] = { 
             id: budgetId,
             name: b.Budget_Manager.Name,
+            year:b.Year_field,
             ...months.reduce((m, month) => { m[month] = 0; return m }, {}) // initialize months
         };
         }
@@ -127,6 +130,7 @@ function RenderBudgetTable(arrData){
         return acc;
     }, {})
     );
+
     // Render budget name with distinct
     BudgetNameArr.forEach(budgetN => {
         // Budget name row
@@ -169,6 +173,7 @@ function RenderBudgetTable(arrData){
             const categoryRow = document.createElement('tr');
             categoryRow.classList.add('category-row');
             categoryRow.setAttribute('data-budget-id', cls_element.budgetId);
+            categoryRow.setAttribute('data-year', budgetN.year);
             categoryRow.setAttribute('data-category', cls_element.class);
 
             const categoryIcon = cls_element.class === 'REVENUE' ? 
@@ -203,20 +208,28 @@ function RenderBudgetTable(arrData){
                 toggleCategoryDetails(cls_element.budgetId, cls_element.class);
             });
 
-             // Render Account name
+            // Render Account name
             // Filter based on the budget ID and class in this account arr
             let Account_filtered = CoaArr.filter(item => item.budgetId === cls_element.budgetId && item.classId === cls_element.classId);
             Account_filtered.forEach(Account_element => {
                 const accountRow = document.createElement('tr');
                 accountRow.classList.add('account-row');
                 accountRow.setAttribute('data-budget-id', Account_element.budgetId);
+                accountRow.setAttribute('data-year', budgetN.year);
                 accountRow.setAttribute('data-category', cls_element.class);
+                accountRow.setAttribute('data-category-id', cls_element.classId);
                 accountRow.setAttribute('data-account', Account_element.accountId);
-                let accountColor = "style='background:#f5f0eb'";
                 accountRow.innerHTML = `
                     <td ${accountColor}></td>
                     <td colspan="3" class="account-td ${"id-"+Account_element.accountId}-category" ${accountColor}>
                         ${Account_element.accountName}
+                        <a class="fill-budget-value ms-auto" href="#" data-action="add-row">
+                            <small>Add row</small> 
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon align-middle">
+                                <path fill="#208EFF" d="M5 256c0 138.6 112.4 251 251 251s251-112.4 251-251S394.6 5 256 5 5 117.4 5 256zm249.2-130.7l113 113c4.9 4.9 7.3 11.3 7.3 17.7 0 6.4-2.4 12.8-7.3 17.7l-113 113c-9.8 9.8-25.6 9.8-35.4 0-9.8-9.8-9.8-25.6 0-35.4l95.4-95.4-95.4-95.4c-9.8-9.8-9.8-25.6 0-35.4 9.8-9.6 25.6-9.6 35.4.2z">
+                                </path>
+                            </svg>
+                        </a>
                     </td>                        
                     <td class="amount-cell" ${accountColor}> ${(Account_element.January != "0.00") ? formatIndia(Account_element.January) : ""} </td>
                     <td class="amount-cell" ${accountColor}> ${(Account_element.February != "0.00") ? formatIndia(Account_element.February) : ""} </td>
@@ -232,9 +245,9 @@ function RenderBudgetTable(arrData){
                     <td class="amount-cell" ${accountColor}> ${(Account_element.December != "0.00") ? formatIndia(Account_element.December) : ""} </td>  
                     <td class="tdfont"></td>
                 `;
-                 budgetTableBody.appendChild(accountRow);
-
-                 // Add click event to toggle account details
+                budgetTableBody.appendChild(accountRow);
+                
+                // Add click event to toggle account details
                 const accCell = accountRow.querySelector(`.${"id-"+Account_element.accountId}-category`);
                 accCell.addEventListener('click', function() {
                     toggleAccountDetails(cls_element.budgetId, Account_element.accountId);
@@ -250,7 +263,9 @@ function RenderBudgetTable(arrData){
                     const customerRow = document.createElement('tr');
                     customerRow.classList.add('customer-row');
                     customerRow.setAttribute('data-budget-id', customer_element.budgetId);
+                    customerRow.setAttribute('data-year', budgetN.year);
                     customerRow.setAttribute('data-category', cls_element.class);
+                    customerRow.setAttribute('data-category-id', cls_element.classId);
                     customerRow.setAttribute('data-account', Account_element.accountId);
                     customerRow.setAttribute('data-itemid', customer_element.item_id);
                     // customerRow.dataset.customerData = JSON.stringify(customer_element); // store full object
@@ -261,6 +276,7 @@ function RenderBudgetTable(arrData){
                     <input type="text" class="amount-input-text" value="${customer_element.customer}" 
                         data-budget-id="${customer_element.budgetId}" 
                         data-category="${cls_element.class}" 
+                        data-categoryId="${Account_element.classId}" 
                         data-account="${Account_element.accountId}" 
                         >
                     </td>`
@@ -366,33 +382,8 @@ function parseNumber(x) {
 }
 
 // Attach to all .amount-input fields
-// document.addEventListener('focusin', e => {
-//     if (e.target.classList.contains('amount-input')) {
-//         e.target.closest('.amount-cell')?.classList.add('editing');
-
-//         const val = parseNumber(e.target.value);
-//         e.target.value = val ? val.toFixed(2) : "";
-//     }
-//     if (e.target.classList.contains('amount-input-text')) 
-//         e.target.closest('.customer-td')?.classList.add('editing');
-
-//     // Show action icons for the row being edited
-//     const editingCells = document.querySelectorAll('.editing');
-//     editingCells.forEach(cell => {
-//         const rowAction = cell.closest('tr')?.querySelector('.approve-reject');
-//         if (rowAction) {
-//             let itemId = cell.closest('tr')?.dataset.itemid; // grab ID from row
-//             rowAction.innerHTML = `
-//                 <i class="fa fa-check" title="Update" style="color: green;" 
-//                     onclick="UpdateRecordByID('Budget_Manager_Items_Js', '${itemId}', '${JSON.stringify(window.customer_filtered)}')"></i>
-//                 <i class="fa fa-times" title="Cancel" style="color: red;" onclick="cancelRow(this)"></i>
-//             `;
-//         }
-//     });
-// });
-
 document.addEventListener('focusin', e => {
-    const cell = e.target.closest('.amount-cell, .customer-td');
+    const cell = e.target.closest('.amount-cell:not(.editing-new-row), .customer-td:not(.editing-new-row)');
     if (!cell) return;
 
     if (e.target.classList.contains('amount-input')) {
@@ -457,7 +448,6 @@ document.addEventListener('focusin', e => {
     });
 });
 
-
 // New function to trigger focusout on the row
 function cancelRow(icon) {
     const row = icon.closest('tr');
@@ -504,6 +494,105 @@ document.addEventListener('input', e => {
     }
 });
 
+// Stop add row collapse and add new row.
+document.addEventListener('DOMContentLoaded', () => {
+  ['pointerdown', 'mousedown', 'touchstart', 'click'].forEach(evt => {
+    document.addEventListener(evt, function (e) {
+      const btn = e.target.closest('.fill-budget-value');
+      if (btn) {
+        // stop ancestor handlers (capture & bubble)
+        e.stopPropagation();
+        e.preventDefault();
+
+        // Only run on click, not on pointerdown/mousedown/touchstart
+        if (evt === 'click') {
+            const td = btn.closest('td');
+            const tr = td.closest('tr');
+
+            let budgetId = tr.dataset.budgetId;
+            let year = tr.dataset.year;
+            let category = tr.dataset.category;
+            let categoryId = tr.dataset.categoryId;
+            let account = tr.dataset.account;
+        
+            // Create new row
+            const newRow = document.createElement('tr');
+            newRow.classList.add('customer-row');
+            newRow.setAttribute('data-budget-id', budgetId);
+            newRow.setAttribute('data-year', year);
+            newRow.setAttribute('data-category', category);
+            newRow.setAttribute('data-category-id', categoryId);
+            newRow.setAttribute('data-account', account);
+            newRow.innerHTML = `
+               <td></td>
+                <td colspan="3" class="customer-td editing-new-row">
+                <input type="text" class="amount-input-text" value="" 
+                    data-budget-id="${budgetId}" 
+                    data-year="${year}" 
+                    data-category="${category}" 
+                    data-category-id="${categoryId}" 
+                    data-account="${account}" 
+                    >
+                </td>`
+                months.forEach((month, idx) => {
+                 newRow.innerHTML += `
+                    <td class="amount-cell editing-new-row">
+                    <input type="text" class="amount-input"
+                        value="" 
+                        data-budget-id="${budgetId}" 
+                        data-year="${year}" 
+                        ata-category="${category}" 
+                        data-category-id="${categoryId}" 
+                        data-account="${account}"
+                        data-month="${idx + 1}">
+                    </td>
+                `;
+                });
+                newRow.innerHTML += `<td class="amount-cell">
+                    <div class="action-icons">
+                        <div class="approve-reject">
+                            <i class="fa fa-plus update-btn" title="Save"></i>
+                        </div>
+                        <div class="remove">
+                            <i class="fa fa-trash remove-row" title="Remove Item"></i>
+                        </div>
+                    </div>
+                </td>`;
+
+            // Insert the new row just after the current row
+            tr.insertAdjacentElement('afterend', newRow);
+            // Attach listener for update button in this new row
+            const updateBtn = newRow.querySelector('.update-btn');
+            updateBtn.addEventListener('click', () => {
+                const updatedCustomerData = {};
+
+                const customerInput = newRow.querySelector('.amount-input-text');
+                updatedCustomerData.Customer = customerInput.value;
+                updatedCustomerData.budgetId = budgetId;
+                updatedCustomerData.year = year;
+                updatedCustomerData.categoryID = categoryId;
+                updatedCustomerData.account = account;
+
+                months.forEach((month, idx) => {
+                    const monthInput = newRow.querySelector(`.amount-cell input[data-month="${idx+1}"]`);
+                    updatedCustomerData[month] = parseNumber(monthInput.value) || "0";
+                });
+
+                POSTRecord('Budget_Manager_Items', updatedCustomerData);
+            });
+        }
+      }
+    }, true); // capture phase
+  });
+});
+//removw rows work 
+document.addEventListener('click', (e) => {
+  const removeBtn = e.target.closest('.remove-row');
+  if (removeBtn) {
+    const tr = removeBtn.closest('tr'); // get the row
+    tr.remove(); // remove it from the DOM
+  }
+});
 
 // Message Text
 function errorMsg(text, color){
@@ -516,3 +605,13 @@ function errorMsg(text, color){
         error_msg.style.display = "none"; // hide again after 2 sec
     }, 5000);
 }
+// New Modal budget Popups
+document.getElementById("openBudget").addEventListener("click", (e) => {
+  e.preventDefault();
+  document.getElementById("BudgetModal").style.display = "flex";
+});
+
+document.getElementById("closeBudget").addEventListener("click", () => {
+  document.getElementById("BudgetModal").style.display = "none";
+});
+
