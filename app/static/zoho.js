@@ -5,8 +5,8 @@ const error_msg = document.getElementById("error-msdid");
 
 // Onload run fetch data
 document.addEventListener("DOMContentLoaded", () => {
- RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr)
- AddBudget('PnL_Raw_Report', '', AllFetchArr=[])
+//  RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults=true)
+ AddBudget('PnL_Raw_Report_JS', '', AllFetchArr=[])
 });
 
 // Fetch Records
@@ -15,13 +15,6 @@ async function fetch(ReportName, recordCursor, AllFetchArr){
         let criteriaVar = "";
         if(ReportName === "COA_Report" && AllFetchArr.length  === 0){
             criteriaVar = "(Class.Class != \"EQUITY\" && Class.Class != \"LIABILITY\" && Class.Class != \"ASSET\" && Status == \"ACTIVE\")"
-        }
-        // else if(ReportName === "PnL_Raw_Report" && AllFetchArr.length > 0){
-        //     criteriaVar = `(Year_field == \"${currentYear}\" && Month_field == \"${AllFetchArr[0]}\" || Month_field == \"${AllFetchArr[1]}\" || Month_field == \"${AllFetchArr[2]}\")`
-        //     AllFetchArr=[];
-        // }
-        else if(ReportName === "PnL_Raw_Report" && AllFetchArr.length  === 0){
-            criteriaVar = `(Year_field == \"${currentYear}\")`
         }
          var config = {
             app_name: AppName,
@@ -41,7 +34,6 @@ async function fetch(ReportName, recordCursor, AllFetchArr){
                 }
                 else{
                     let Arr_merged = AllFetchArr.flat();
-                    console.log(Arr_merged)
                     return Arr_merged;
                 }
             }
@@ -92,7 +84,7 @@ function UpdateRecordByID(ReportName,RecID, customer_Arr){
         ZOHO.CREATOR.DATA.updateRecordById(UpdateRec_config).then(function (Update_response) {
             if (Update_response.code == 3000) {
                 let AllFetchArr = [];
-                RenderBudgetTable("Budget_Manager_Items_Js", "", AllFetchArr);
+                RenderBudgetTable("Budget_Manager_Items_Js", "", AllFetchArr, defaults=true);
                 
                 // Submit Response
                 errorMsg("Item Updated.", "green")
@@ -121,7 +113,7 @@ function DeleteRecordByID(ReportName, RecID){
         ZOHO.CREATOR.DATA.deleteRecordById(Deleteconfig).then(function (Delete_response) {
         if (Delete_response.code == 3000) {
             let AllFetchArr = [];
-            RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr)
+            RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults=true)
 
             // Submit Response
             errorMsg("Item Deleted.", "green")
@@ -172,7 +164,7 @@ function POSTRecord(FormName, customer_Arr){
         ZOHO.CREATOR.DATA.addRecords(postRec_config).then(function (post_response) {
             if (post_response.code == 3000) {
                 let AllFetchArr = [];
-                RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr)
+                RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr , defaults=true)
                 
                 // Submit Response
                 errorMsg("Item Added.", "green")

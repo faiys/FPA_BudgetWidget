@@ -16,11 +16,6 @@ function subMonth(n) {
   d.setMonth(d.getMonth() - n); 
   return d;
 }
-// let prevMonth = subMonth(1);
-// console.log(prevMonth.getMonth() + 1); // number (1-12)
-// console.log(prevMonth.toLocaleString('default', { month: 'long' })); // full nam
-
-
 
 // New Modal budget Popups
 document.getElementById("openBudget").addEventListener("click", (e) => {
@@ -70,71 +65,129 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
   const enter_month = document.getElementById('startMonth').value;
   const enter_period = document.getElementById('period').value;
 
-  var last3Month_List = []
-  var last3Month = null;
-
-  // If create the budget same year on jan or feb, take the actual last 3 month as Oct, nov, dec
-  if(currentMonth_No == 1)
-  {
-    currentMonth_No = subMonth(1).getMonth() + 1;
-  }
-  else if(currentMonth_No == 2)
-  {
-    currentMonth_No = subMonth(2).getMonth() + 1;
-  }
-
-  // get Last3 Month
-  if(currentMonth_No > 2)
-  {
-    last3Month = currentMonth_No - 2;
-  }
-  else if(currentMonth_No == 2)
-  {
-    last3Month = currentMonth_No - 1;
-  }
-  else
-  {
-    last3Month = currentMonth_No;
-  }
-   
-  months.forEach((Month_Name, monthIdx) => {
-    // 		Last 3 month month name
-		if(monthIdx + 1 >= last3Month && monthIdx < currentMonth_No)
-		{
-			last3Month_List.push(Month_Name);
-		}
-  });
-  // console.log(last3Month_List)
-
-  // let pnlLast3MonthArr = await fetch(ReportName, recordCursor, last3Month_List)
   let pnlNowyearArr = await fetch(ReportName, recordCursor, [])
-  let cosArrData = await fetch("COA_Report", recordCursor, []);
+  let cosArrData = await fetch("COA_Report_JS", recordCursor, []);
 
-  // Use Map to get unique Class objects
-  const distinctClassesMap = new Map();
-  cosArrData.forEach(acc => {
-    const key = acc.Class.ID + "_" + acc.Class.Class; 
-    if (!distinctClassesMap.has(key)) {
-      distinctClassesMap.set(key, acc.Class);
-    }
+  console.log("pnl - ", pnlNowyearArr)
+  console.log("cos - ", cosArrData)
+
+  // Compute last 3 months including current
+  let last3Months = [];
+  for (let i = 2; i >= 0; i--) { // 2 months before, 1 month before, current
+    let d = new Date(currentYear, currentMonth_No - 1 - i, 1);
+    last3Months.push({
+      monthNo: d.getMonth() + 1,
+      year: d.getFullYear()
+    });
+  }
+  // Filter pnlArr for last 3 months
+  const last3MonthData = pnlNowyearArr.filter(item => {
+    const itemMonth = parseInt(item.Month_No);
+    const itemYear = parseInt(item.Year_field);
+    return last3Months.some(m => m.monthNo === itemMonth && m.year === itemYear);
   });
-  const distinctClasses = Array.from(distinctClassesMap.values());
-  console.log(distinctClasses);
+  console.log("last3MonthData - ", last3MonthData);
 
-  // get pnl uniq Account name and check coa arr for getting active account name
-  const pnlAccountSet = new Set(pnlNowyearArr.map(item => item.Account_Name));
-  const matchedCOA = cosArrData.filter(coa => pnlAccountSet.has(coa.Account_Name));
-  console.log(matchedCOA);
-
-  // Add unique Transaction_Details to each matched COA
-  const coaWithTransactions = matchedCOA.map(coa => {
-    const relatedPNL = pnlNowyearArr.filter(pnl => pnl.Account_Name === coa.Account_Name);
-    const transactionDetails = [...new Set(relatedPNL.map(item => item.Transaction_Details))];
+  // getting middle month for populate the amount to the table.
+  last3MonthData.sort((a, b) => Number(a.Month_No) - Number(b.Month_No));
+  let centerIndex = Math.floor((last3MonthData.length - 1) / 2);
+  let centerMonthNo = last3MonthData[centerIndex].Month_No;
+  let centerMonthArr = last3MonthData.filter(item => item.Month_No === centerMonthNo);
+  //Sum Amounts grouped by Account_Name and Transaction_Details
+  let sumByCriteria = {};
+  centerMonthArr.forEach(item => {
+    const key = `${item.Account_Name}||${item.Transaction_Details}`; // combine criteria
+    const amount = parseFloat(item.Amount) || 0;
+    
+    if (!sumByCriteria[key]) sumByCriteria[key] = 0;
+    sumByCriteria[key] += amount;
+  });
+  // Convert to an array if needed
+  let summedArr = Object.entries(sumByCriteria).map(([key, total]) => {
+    const [Account_Name, Transaction_Details] = key.split("||");
     return {
-      ...coa,
-      Transaction_Details: transactionDetails
+      Account_Name,
+      Transaction_Details,
+      Total_Amount: total
     };
   });
-  console.log(coaWithTransactions);
 
+  // Mergr pnl and COA 
+  let merged = [];
+  cosArrData.forEach(coa => {
+    if (!coa || !coa.Account_Name || !coa.Class) return;
+
+    // Last 3 month checking
+    let Last3Match = last3MonthData.filter(pnl =>
+      coa.Account_Name === pnl.Account_Name 
+    );
+
+    // Default checking
+    let matches = pnlNowyearArr.filter(pnl =>
+      coa.Account_Name === pnl.Account_Name 
+    );
+    if (matches.length > 0 ) {
+      // Track distinct transaction details to avoid duplicates
+      let seenDetails = new Set();
+
+      matches.forEach(pnl => {
+        if (!seenDetails.has(pnl.Transaction_Details)) {
+          seenDetails.add(pnl.Transaction_Details);
+
+          let obj ={
+            Account_Name: {
+              Account_Name: coa.Account_Name,
+              ID: coa.ID
+            },
+            Class: {
+              Class: coa.Class.Class || coa.Class[" "],
+              ID: coa.Class.ID
+            },
+            Budget_Manager: {
+              ID: "4837701000000211575",
+              Name: 'Faiyas'
+            },
+            Customer: pnl.Transaction_Details,
+            Year_field: pnl.Year_field
+          };
+          // Find the 2nd month object from Last3Match that matches both Account_Name and Transaction_Details
+          const secondMonthObj = summedArr.find((m) => 
+            m.Transaction_Details === pnl.Transaction_Details && m.Account_Name == pnl.Account_Name
+          );
+          const amountToAssign = secondMonthObj ? parseFloat(secondMonthObj.Total_Amount) : 0;
+          months.forEach(month => {
+            obj[month] = amountToAssign.toFixed(2);
+          });  
+
+          // Initialize all months with 0.00
+          Actual_months.forEach(month => {
+            obj[month] = "0.00";
+          });
+          // Filter all matching records
+          const matchingArr = Last3Match.filter(lm =>
+            lm.Transaction_Details === pnl.Transaction_Details &&
+            lm.Account_Name === pnl.Account_Name
+          );
+          const monthSums = {};
+          matchingArr.forEach(item => {
+            if (item.Month_field) {
+              const monthKey = "Actual_" + item.Month_field;
+              if (!monthSums[monthKey]) monthSums[monthKey] = 0;
+              monthSums[monthKey] += parseFloat(item.Amount || 0);
+            }
+          });
+          // Assign summed amounts to obj
+          Object.keys(monthSums).forEach(monthKey => {
+            if (Actual_months.includes(monthKey)) {
+              obj[monthKey] = monthSums[monthKey].toFixed(2);
+            }
+          });
+
+          merged.push(obj);
+        }
+      });
+    }
+  });
+  console.log("merged - ", merged);
+  RenderBudgetTable("", "",merged, defaults=false)
 }

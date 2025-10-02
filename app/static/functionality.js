@@ -1,30 +1,43 @@
 const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const Actual_months = ['JActual_anuary','Actual_February','Actual_March','Actual_April','Actual_May','Actual_June','Actual_July','Actual_August','Actual_September','Actual_October','Actual_November','Actual_December'];
 const accountColor = "style='background:#f5f0eb'";
 
 // Render budget Table
-async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
-    const arrData = await fetch(ReportName, recordCursor, AllFetchArr);
+async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults){
+    let arrData;
+    if(defaults == true && ReportName){
+         arrData = await fetch(ReportName, recordCursor, AllFetchArr);
+    }
+    else{
+        arrData = AllFetchArr;
+        console.log("Load Add budget")
+    }
     budgetTableBody.innerHTML = '';
     arrData.sort((a, b) => b.Year_field - a.Year_field);
-    // console.log("arrData - ",arrData);
 
     // Step 1: Sum month-wise by Budget_Manager.ID
     const BudgetNameArr = Object.values(
-    arrData.reduce((acc, b) => {
-        const budgetId = b.Budget_Manager.ID;
-        if (!acc[budgetId]) {
-        acc[budgetId] = { 
-            id: budgetId,
-            name: b.Budget_Manager.Name,
-            year:b.Year_field,
-            ...months.reduce((m, month) => { m[month] = 0; return m }, {}) // initialize months
-        };
-        }
-        months.forEach(month => {
-        acc[budgetId][month] += parseFloat(b[month] || 0);
-        });
-        return acc;
-    }, {})
+        arrData.reduce((acc, b) => {
+            const budgetId = b.Budget_Manager.ID;
+            if (!acc[budgetId]) {
+            acc[budgetId] = { 
+                id: budgetId,
+                name: b.Budget_Manager.Name,
+                year:b.Year_field,
+                ...months.reduce((m, month) => { m[month] = 0; return m }, {}), // initialize months
+                ...Actual_months.reduce((am, amonth) => { am[amonth] = 0; return am; }, {})
+            };
+            }
+            months.forEach(month => {
+                acc[budgetId][month] += parseFloat(b[month] || 0);
+            });
+            // Sum actual months (if present in b)
+            Actual_months.forEach(amonth => {
+                acc[budgetId][amonth] += parseFloat(b[amonth] || 0);
+            });
+            
+            return acc;
+        }, {})
     );
 
     // ✅ Step 1: Find all month keys dynamically
@@ -35,7 +48,6 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
         )
     )
     );
-
     // ✅ Step 2: Group by composite key (ClassID_BudgetID) and sum months
     const classArr = Object.values(
     arrData.reduce((acc, b) => {
@@ -55,7 +67,6 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
         return acc;
     }, {})
     );
-
     // ✅ Step 1: Find all month keys dynamically
     const account_months = Array.from(
     new Set(
@@ -64,6 +75,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
         )
     )
     );
+    classArr.sort((a, b) => b.class.localeCompare(a.class));
 
     // ✅ Step 2: Group by Account + Class + Budget
     const CoaArr = Object.values(
@@ -86,7 +98,6 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
         return acc;
     }, {})
     );
-
     // ✅ Step 1: Find all month keys dynamically (exclude fixed keys)
     const customer_months = Array.from(
     new Set(
@@ -97,6 +108,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
         )
     )
     );
+    CoaArr.sort((a, b) => a.accountName.localeCompare(b.accountName));
 
     // ✅ Step 2: Group by Account + Class + Budget + Customer
     const customerArr = Object.values(
@@ -130,6 +142,37 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
         return acc;
     }, {})
     );
+    customerArr.sort((a, b) => a.customer.localeCompare(b.customer));
+
+// Header 
+    const actualMonthsInData = new Set();
+    BudgetNameArr.forEach(budgetN => {
+        Object.keys(budgetN).forEach(key => {
+            if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
+            actualMonthsInData.add(key);
+            }
+        });
+    });
+    const thead = document.querySelector('thead');
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = `<th colspan="4"></th>`;
+    if(defaults === false){
+        Array.from(actualMonthsInData).forEach(amonth => {
+            const th = document.createElement('th');
+            th.textContent = amonth.replace("Actual_", "Actual "); 
+            headerRow.appendChild(th);
+        });
+    }
+    months.forEach(month => {
+        const th = document.createElement('th');
+        th.textContent = month;
+        headerRow.appendChild(th);
+    });
+    const actionTh = document.createElement('th');
+    actionTh.textContent = "Action";
+    headerRow.appendChild(actionTh);
+    thead.innerHTML = '';
+    thead.appendChild(headerRow);
 
     // Render budget name with distinct
     BudgetNameArr.forEach(budgetN => {
@@ -141,23 +184,19 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
                 <div class="budget-name" data-budget-id="${budgetN.id}" data-target="budget-details">
                     <i class="fas fa-chevron-down"></i> ${budgetN.name}
                 </div>
-            </td>
-            <td class="tdfont"> ${(budgetN.January != "0.00") ? formatIndia(budgetN.January) : ""} </td>
-            <td class="tdfont"> ${(budgetN.February != "0.00") ? formatIndia(budgetN.February) : ""} </td>
-            <td class="tdfont"> ${(budgetN.March != "0.00") ? formatIndia(budgetN.March) : ""} </td>
-            <td class="tdfont"> ${(budgetN.April != "0.00") ? formatIndia(budgetN.April) : ""} </td>
-            <td class="tdfont"> ${(budgetN.May != "0.00") ? formatIndia(budgetN.May) : ""} </td>
-            <td class="tdfont"> ${(budgetN.June != "0.00") ? formatIndia(budgetN.June) : ""} </td>
-            <td class="tdfont"> ${(budgetN.July != "0.00") ? formatIndia(budgetN.July) : ""} </td>
-            <td class="tdfont"> ${(budgetN.August != "0.00") ? formatIndia(budgetN.August) : ""} </td>
-            <td class="tdfont"> ${(budgetN.September != "0.00") ? formatIndia(budgetN.September) : ""} </td>
-            <td class="tdfont"> ${(budgetN.October != "0.00") ? formatIndia(budgetN.October) : ""} </td>
-            <td class="tdfont"> ${(budgetN.November != "0.00") ? formatIndia(budgetN.November) : ""} </td>
-            <td class="tdfont"> ${(budgetN.December != "0.00") ? formatIndia(budgetN.December) : ""} </td>
-            <td class="tdfont">
-
-            </td>
+            </td></td>
         `;
+        if(defaults === false){
+            Object.keys(budgetN).forEach(key => {
+                if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
+                    budgetRow.innerHTML += `<td class="tdfont">${formatIndia(budgetN[key])}</td>`;
+                }
+            });
+        }
+        months.forEach(month => {
+             budgetRow.innerHTML += `<td class="tdfont">${budgetN[month] != "0.00" ? formatIndia(budgetN[month]) : ""}</td>`;
+        });
+        budgetRow.innerHTML += `<td class="tdfont"></td>`;
         budgetTableBody.appendChild(budgetRow);
 
         // Add click event to toggle budget details
@@ -185,21 +224,19 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
                 <td style="background-color: #e4e4e4;"></td>
                 <td colspan="3" class="${cls_element.class}-category" style="background-color: #e4e4e4;">
                     ${categoryIcon} ${cls_element.class}
-                </td>   
-                <td class="amount-cell" ${cat_color}> ${(cls_element.January != "0.00") ? formatIndia(cls_element.January) : ""} </td>
-                <td class="amount-cell" ${cat_color}> ${(cls_element.February != "0.00") ? formatIndia(cls_element.February) : ""} </td>
-                <td class="amount-cell" ${cat_color}> ${(cls_element.March != "0.00") ? formatIndia(cls_element.March) : ""} </td>
-                <td class="amount-cell" ${cat_color}> ${(cls_element.April != "0.00") ? formatIndia(cls_element.April) : ""} </td>
-                <td class="amount-cell" ${cat_color}> ${(cls_element.May != "0.00") ? formatIndia(cls_element.May) : ""} </td>
-                <td class="amount-cell" ${cat_color}> ${(cls_element.June != "0.00") ? formatIndia(cls_element.June) : ""} </td>
-                <td class="amount-cell" ${cat_color}> ${(cls_element.July != "0.00") ? formatIndia(cls_element.July) : ""} </td>
-                <td class="amount-cell" ${cat_color}> ${(cls_element.August != "0.00") ? formatIndia(cls_element.August) : ""} </td>
-                <td class="amount-cell" ${cat_color}> ${(cls_element.September != "0.00") ? formatIndia(cls_element.September) : ""} </td>
-                <td class="amount-cell" ${cat_color}> ${(cls_element.October != "0.00") ? formatIndia(cls_element.October) : ""} </td>
-                <td class="amount-cell" ${cat_color}> ${(cls_element.November != "0.00") ? formatIndia(cls_element.November) : ""} </td>
-                <td class="amount-cell" ${cat_color}> ${(cls_element.December != "0.00") ? formatIndia(cls_element.December) : ""} </td>      
-                <td class="tdfont"></td>          
+                </td>       
             `;
+            if(defaults === false){
+                Object.keys(cls_element).forEach(key => {
+                    if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
+                        categoryRow.innerHTML += `<td class="amount-cell" ${cat_color}>${formatIndia(cls_element[key])}</td>`;
+                    }
+                });
+             }
+            months.forEach(month => {
+                categoryRow.innerHTML += `<td class="amount-cell" ${cat_color}>${(cls_element[month] != "0.00") ? formatIndia(cls_element[month]) : ""}</td>`;
+            });
+            categoryRow.innerHTML += `<td class="tdfont"></td>`;
             budgetTableBody.appendChild(categoryRow);
 
             // Add click event to toggle category details
@@ -231,20 +268,18 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
                             </svg>
                         </a>
                     </td>                        
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.January != "0.00") ? formatIndia(Account_element.January) : ""} </td>
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.February != "0.00") ? formatIndia(Account_element.February) : ""} </td>
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.March != "0.00") ? formatIndia(Account_element.March) : ""} </td>
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.April != "0.00") ? formatIndia(Account_element.April) : ""} </td>
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.May != "0.00") ? formatIndia(Account_element.May) : ""} </td>
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.June != "0.00") ? formatIndia(Account_element.June) : ""} </td>
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.July != "0.00") ? formatIndia(Account_element.July) : ""} </td>
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.August != "0.00") ? formatIndia(Account_element.August) : ""} </td>
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.September != "0.00") ? formatIndia(Account_element.September) : ""} </td>
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.October != "0.00") ? formatIndia(Account_element.October) : ""} </td>
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.November != "0.00") ? formatIndia(Account_element.November) : ""} </td>
-                    <td class="amount-cell" ${accountColor}> ${(Account_element.December != "0.00") ? formatIndia(Account_element.December) : ""} </td>  
-                    <td class="tdfont"></td>
                 `;
+                if(defaults === false){
+                    Object.keys(Account_element).forEach(key => {
+                        if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
+                            accountRow.innerHTML += `<td class="amount-cell">${formatIndia(Account_element[key])}</td>`;
+                        }
+                    });
+                }
+                months.forEach(month => {
+                    accountRow.innerHTML += `<td class="amount-cell">${(Account_element[month] != "0.00") ? formatIndia(Account_element[month]) : ""}</td>`;
+                });
+                accountRow.innerHTML += `<td class="tdfont"></td>`;
                 budgetTableBody.appendChild(accountRow);
                 
                 // Add click event to toggle account details
@@ -268,18 +303,25 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr){
                     customerRow.setAttribute('data-category-id', cls_element.classId);
                     customerRow.setAttribute('data-account', Account_element.accountId);
                     customerRow.setAttribute('data-itemid', customer_element.item_id);
-                    // customerRow.dataset.customerData = JSON.stringify(customer_element); // store full object
                     
                     let customerrowHTML= `
                     <td></td>
                     <td colspan="3" class="customer-td">
-                    <input type="text" class="amount-input-text" value="${customer_element.customer}" 
-                        data-budget-id="${customer_element.budgetId}" 
-                        data-category="${cls_element.class}" 
-                        data-categoryId="${Account_element.classId}" 
-                        data-account="${Account_element.accountId}" 
+                        <input type="text" class="amount-input-text" value="${customer_element.customer}" 
+                            data-budget-id="${customer_element.budgetId}" 
+                            data-category="${cls_element.class}" 
+                            data-categoryId="${Account_element.classId}" 
+                            data-account="${Account_element.accountId}" 
                         >
                     </td>`
+                    if(defaults === false){
+                        Object.keys(customer_element).forEach(key => {
+                            if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
+                                console.log("start - ", customer_element[key])
+                                customerrowHTML += `<td class="amount-cell">${formatIndia(customer_element[key])}</td>`;
+                            }
+                        });
+                    }
                     months.forEach((month, idx) => {
                     const val = customer_element[month] != "0.00" ? formatIndia(customer_element[month]) : "";
                     customerrowHTML += `
