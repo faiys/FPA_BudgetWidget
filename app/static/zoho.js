@@ -5,8 +5,8 @@ const error_msg = document.getElementById("error-msdid");
 
 // Onload run fetch data
 document.addEventListener("DOMContentLoaded", () => {
-//  RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults=true)
- AddBudget('PnL_Raw_Report_JS', '', AllFetchArr=[])
+ RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults=true)
+//  AddBudget('PnL_Raw_Report_JS', '', AllFetchArr=[])
 });
 
 // Fetch Records
@@ -129,7 +129,7 @@ function DeleteRecordByID(ReportName, RecID){
 }
 
 // Post API
-function POSTRecord(FormName, customer_Arr){
+async function POSTRecord(FormName, customer_Arr){
     let payload = "";
     try{
         if(FormName === "Budget_Manager_Items" && customer_Arr){
@@ -156,25 +156,33 @@ function POSTRecord(FormName, customer_Arr){
                 }
             }
         }
+        else if(FormName === "Budget_Manager" && customer_Arr){
+            payload = {
+                "data":
+                {
+                    "Name" : customer_Arr.name,
+                    "Year_field" : customer_Arr.year,
+                    "Start_Month" :customer_Arr.month,
+                    "Period" : customer_Arr.period
+                }
+            }
+        }
         var postRec_config = {
             app_name: AppName,
             form_name: FormName,
             payload: payload
         };
-        ZOHO.CREATOR.DATA.addRecords(postRec_config).then(function (post_response) {
-            if (post_response.code == 3000) {
-                let AllFetchArr = [];
-                RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr , defaults=true)
-                
-                // Submit Response
-                errorMsg("Item Added.", "green")
-            }
-            else{
-                console.log("POST rec error = ",post_response)
-            }
-        });       
+        const post_response = await ZOHO.CREATOR.DATA.addRecords(postRec_config);
+        if (post_response.code == 3000) {
+            return post_response
+        }
+        else{
+            console.log("POST rec error = ",post_response)
+            return post_response
+        }    
     }
     catch (err){
          console.log("zoho init error for update = ", err)
+         return err
     }
 }

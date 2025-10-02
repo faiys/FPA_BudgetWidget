@@ -10,7 +10,6 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     }
     else{
         arrData = AllFetchArr;
-        console.log("Load Add budget")
     }
     budgetTableBody.innerHTML = '';
     arrData.sort((a, b) => b.Year_field - a.Year_field);
@@ -317,7 +316,6 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                     if(defaults === false){
                         Object.keys(customer_element).forEach(key => {
                             if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
-                                console.log("start - ", customer_element[key])
                                 customerrowHTML += `<td class="amount-cell">${formatIndia(customer_element[key])}</td>`;
                             }
                         });
@@ -335,23 +333,45 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                         </td>
                     `;
                     });
-                    customerrowHTML += `<td class="amount-cell">
-                        <div class="action-icons">
-                            <div class="approve-reject">
-                                
+                    if(defaults === true){
+                        customerrowHTML += `<td class="amount-cell">
+                            <div class="action-icons">
+                                <div class="approve-reject">
+                                    
+                                </div>
+                                <div class="remove">
+                                    <i class="fa fa-trash" title="Remove Item" onclick="DeleteRecordByID('Budget_Manager_Items_Js', '${customer_element.item_id}')"></i>
+                                </div>
                             </div>
-                            <div class="remove">
-                                <i class="fa fa-trash" title="Remove Item" onclick="DeleteRecordByID('Budget_Manager_Items_Js', '${customer_element.item_id}')"></i>
+                        </td>`;
+                    }
+                    else{
+                        customerrowHTML += `<td class="amount-cell">
+                            <div class="action-icons">
+                                <div class="approve-reject">
+                                    
+                                </div>
+                                <div class="remove">
+                                    <i class="fa fa-trash trash-icon" title="remove" data-item-id="${customer_element.item_id}"></i>
+                                </div>
                             </div>
-                        </div>
-                    </td>`;
+                        </td>`;
+                    }
                     customerRow.innerHTML = customerrowHTML
+                    window.tdCount = customerRow.querySelectorAll("td").length;
                     budgetTableBody.appendChild(customerRow);
 
                 });
             });
         });
     });
+    // deleted add budget Items
+    document.getElementById("budgetTableBody").addEventListener("click", (e) => {
+    if (e.target && e.target.classList.contains("trash-icon")) {
+        const row = e.target.closest("tr");
+        if (row) row.remove();
+    }
+});
 }
 
 // Toggle budget details (expand/collapse)
@@ -448,15 +468,31 @@ document.addEventListener('focusin', e => {
         // Clear previous buttons
         rowAction.innerHTML = "";
 
-        // Get row-specific data
-        // const itemId = row.dataset.itemid;
-        // const customerData = JSON.parse(row.dataset.customerData); // row’s customer object
-
         // Create buttons
-        const updateBtn = document.createElement('i');
-        updateBtn.className = 'fa fa-check update-btn';
-        updateBtn.title = 'Update';
-        updateBtn.style.color = 'green';
+        if(defaults === true){
+            const updateBtn = document.createElement('i');
+            updateBtn.className = 'fa fa-check update-btn';
+            updateBtn.title = 'Update';
+            updateBtn.style.color = 'green';
+            // Append buttons
+            rowAction.appendChild(updateBtn);
+            // Add event listeners
+            updateBtn.addEventListener('click', () => {
+                const updatedCustomerData = {};
+
+                // Customer name
+                const customerInput = row.querySelector('.amount-input-text');
+                updatedCustomerData.Customer = customerInput.value;
+
+                // Months (Jan–Dec)
+                months.forEach((month, idx) => {
+                    const monthInput = row.querySelector(`.amount-cell input[data-month="${idx+1}"]`);
+                    updatedCustomerData[month] = parseNumber(monthInput.value) || "0";
+                });
+
+                UpdateRecordByID('Budget_Manager_Items_Js', row.dataset.itemid, updatedCustomerData);
+            });
+        }
 
         const cancelBtn = document.createElement('i');
         cancelBtn.className = 'fa fa-times cancel-btn';
@@ -464,25 +500,7 @@ document.addEventListener('focusin', e => {
         cancelBtn.style.color = 'red';
 
         // Append buttons
-        rowAction.appendChild(updateBtn);
         rowAction.appendChild(cancelBtn);
-
-        // Add event listeners
-        updateBtn.addEventListener('click', () => {
-             const updatedCustomerData = {};
-
-            // Customer name
-            const customerInput = row.querySelector('.amount-input-text');
-            updatedCustomerData.Customer = customerInput.value;
-
-            // Months (Jan–Dec)
-            months.forEach((month, idx) => {
-                const monthInput = row.querySelector(`.amount-cell input[data-month="${idx+1}"]`);
-                updatedCustomerData[month] = parseNumber(monthInput.value) || "0";
-            });
-
-            UpdateRecordByID('Budget_Manager_Items_Js', row.dataset.itemid, updatedCustomerData);
-        });
 
         cancelBtn.addEventListener('click', () => {
             cancelRow(cancelBtn);
@@ -576,6 +594,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     data-account="${account}" 
                     >
                 </td>`
+                if(defaults === false)
+                {
+                    var addTD = window.tdCount - 15;
+                    for (let index = 0; index < addTD; index++) {
+                        newRow.innerHTML +=`<td class="amount-cell editing-new-row"></td>`                   
+                    }
+                }
                 months.forEach((month, idx) => {
                  newRow.innerHTML += `
                     <td class="amount-cell editing-new-row">
@@ -593,7 +618,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 newRow.innerHTML += `<td class="amount-cell">
                     <div class="action-icons">
                         <div class="approve-reject">
-                            <i class="fa fa-plus update-btn" title="Save"></i>
+                            ${
+                                (defaults === true)? `<i class="fa fa-plus update-btn" title="Save"></i>`:``
+                            }
                         </div>
                         <div class="remove">
                             <i class="fa fa-trash remove-row" title="Remove Item"></i>
@@ -604,24 +631,35 @@ document.addEventListener('DOMContentLoaded', () => {
             // Insert the new row just after the current row
             tr.insertAdjacentElement('afterend', newRow);
             // Attach listener for update button in this new row
-            const updateBtn = newRow.querySelector('.update-btn');
-            updateBtn.addEventListener('click', () => {
-                const updatedCustomerData = {};
+            if(defaults === true){
+                const updateBtn = newRow.querySelector('.update-btn');
+                updateBtn.addEventListener('click', async () => {
+                    const updatedCustomerData = {};
 
-                const customerInput = newRow.querySelector('.amount-input-text');
-                updatedCustomerData.Customer = customerInput.value;
-                updatedCustomerData.budgetId = budgetId;
-                updatedCustomerData.year = year;
-                updatedCustomerData.categoryID = categoryId;
-                updatedCustomerData.account = account;
+                    const customerInput = newRow.querySelector('.amount-input-text');
+                    updatedCustomerData.Customer = customerInput.value;
+                    updatedCustomerData.budgetId = budgetId;
+                    updatedCustomerData.year = year;
+                    updatedCustomerData.categoryID = categoryId;
+                    updatedCustomerData.account = account;
 
-                months.forEach((month, idx) => {
-                    const monthInput = newRow.querySelector(`.amount-cell input[data-month="${idx+1}"]`);
-                    updatedCustomerData[month] = parseNumber(monthInput.value) || "0";
+                    months.forEach((month, idx) => {
+                        const monthInput = newRow.querySelector(`.amount-cell input[data-month="${idx+1}"]`);
+                        updatedCustomerData[month] = parseNumber(monthInput.value) || "0";
+                    });
+
+                    const itemAddResp = await POSTRecord('Budget_Manager_Items', updatedCustomerData);
+                    if(itemAddResp.code == 3000)
+                    {
+                        let AllFetchArr = [];
+                        RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr , defaults=true)
+                        errorMsg("Item Added.", "green")
+                    }
+                    else{
+                        errorMsg("Item Add failed.", "red")
+                    }
                 });
-
-                POSTRecord('Budget_Manager_Items', updatedCustomerData);
-            });
+            }
         }
       }
     }, true); // capture phase

@@ -37,7 +37,7 @@
                 <i class="fa fa-plus"></i> Add Budget
             </a>
             <!-- Budget Modal -->
-            <div id="BudgetModal" class="budget-modal">
+            <div id="BudgetModal" class="budget-modal" style="display: none;">
                 <div class="budgetmodal-content">
                     <h4>Budget</h4>
                     <!-- Error message container -->
@@ -77,14 +77,14 @@
                         <label for="period">Period</label>
                         <select id="period">
                         <option>Monthly</option>
-                        <option>3 Months</option>
-                        <option>6 Months</option>
+                        <option>3 Month</option>
+                        <option>6 Month</option>
                         </select>
                     </div>
                     </div>
 
                     <div class="budgetmodal-actions">
-                    <button class="btn primary" onclick="AddBudget('COA_Report', '', AllFetchArr=[])">Add</button>
+                    <button class="btn primary">Add</button>
                     <button class="btn cancel" id="closeBudget">Cancel</button>
                     </div>
                 </div>
