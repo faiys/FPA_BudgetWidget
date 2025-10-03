@@ -1,5 +1,5 @@
 const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const Actual_months = ['JActual_anuary','Actual_February','Actual_March','Actual_April','Actual_May','Actual_June','Actual_July','Actual_August','Actual_September','Actual_October','Actual_November','Actual_December'];
+const Actual_months = ['Actual_January','Actual_February','Actual_March','Actual_April','Actual_May','Actual_June','Actual_July','Actual_August','Actual_September','Actual_October','Actual_November','Actual_December'];
 const accountColor = "style='background:#f5f0eb'";
 
 // Render budget Table

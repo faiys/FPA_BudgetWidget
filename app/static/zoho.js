@@ -186,3 +186,36 @@ async function POSTRecord(FormName, customer_Arr){
          return err
     }
 }
+
+// Post Bulk API
+async function POSTBulkRecord(FormName, inputArr){
+    console.log("inputArr - ",inputArr)
+     let payload = "";
+    try{
+        if(FormName === "Budget_Manager_Items" && inputArr){
+            payload = {
+                "data": [inputArr]
+            }
+        }
+        console.log("payload = ",payload)
+        var postRec_config = {
+            app_name: AppName,
+            form_name: FormName,
+            private_link : "v880yEkuP3seQCT7fOhvJgG0WgdY29hFudt5yAKw9YarRE6wYXGBVw21jCmxgAyRMV4KT5nuMsW5EYZ1tU81sCA3wx8vPkh402bA",
+            payload: payload
+        };
+        const post_response = await ZOHO.CREATOR.PUBLISH.addRecords(postRec_config);
+        console.log("post_response = ",post_response)
+        if (post_response.code == 3000) {
+            return post_response
+        }
+        else{
+            console.log("POST rec error = ",post_response)
+            return post_response
+        }    
+    }
+    catch (err){
+         console.log("zoho init error for update = ", err)
+         return err
+    }
+}

@@ -100,7 +100,7 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
     last3MonthData.sort((a, b) => Number(a.Month_No) - Number(b.Month_No));
     let centerIndex = Math.floor((last3MonthData.length - 1) / 2);
     let centerMonthNo = last3MonthData[centerIndex].Month_No;
-    let centerMonthArr = last3MonthData.filter(item => item.Month_No === centerMonthNo);
+    let centerMonthArr = last3MonthData.filter(item => item.Month_No === centerMonthNo);  
     //Sum Amounts grouped by Account_Name and Transaction_Details
     let sumByCriteria = {};
     centerMonthArr.forEach(item => {
@@ -223,10 +223,73 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
         });
       }
     });
-    console.log("merged - ", merged);
+    console.log("mergerd - ", merged)
     RenderBudgetTable("", "",merged, defaults=false)
+    createBudgetButtons(merged, {name:enter_name, year:enter_year.toString(), month:enter_month.toString(), period : (enter_period.toLowerCase() === "monthly")? "": enter_period});
+
   // }
   // else{
   //   errorMsg("Budget creation failed.", "red")
   // }
+}
+function createBudgetButtons(mergedArr, BudgetFormArr){
+
+  const budgetSaveCancel = document.getElementById("budgetsave-cancel");
+
+  budgetSaveCancel.innerHTML = "";
+  // Create Save button
+  const saveBtn = document.createElement("button");
+  saveBtn.className = "budgetbtn-save";
+  saveBtn.textContent = "Save Changes";
+  saveBtn.id = "budgetbtn-save";
+  // Create Cancel button
+  const cancelBtn = document.createElement("button");
+  cancelBtn.className = "budgetbtn-cancel";
+  cancelBtn.textContent = "Remove Budget";
+  cancelBtn.id = "budgetbtn-cancel";
+
+  // Append buttons to container
+  budgetSaveCancel.appendChild(saveBtn);
+  budgetSaveCancel.appendChild(cancelBtn);
+
+    // Add click listeners **after buttons are created**
+  saveBtn.addEventListener('click', async function() {
+    // const addbudgetResp = await POSTRecord("Budget_Manager", {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : BudgetFormArr.period});
+    // if(addbudgetResp.code == 3000)
+    // {addbudgetResp.data.ID
+      // const updatedArr = mergedArr.map(item => ({
+      //   ...item,
+      //   Budget_Manager: {
+      //     ...item.Budget_Manager,
+      //     ID: 123,
+      //     Name: BudgetFormArr.name
+      //   },
+      // }));
+      const updatedArr = mergedArr.map(item => ({
+        ...item,
+        "Budget_Manager": "4837701000000253003",
+        "Account_Name": item.Account_Name.ID,
+        "Class": item.Class.ID
+      }));
+      // remove old keys
+      // updatedArr.forEach(obj => {
+      //   delete obj.Budget_Manager;
+      //   delete obj.Account_Name;
+      //   delete obj.Class;
+      // });
+      console.log("updatedArr =", updatedArr);
+      POSTBulkRecord("Budget_Manager_Items", updatedArr);
+    // }
+  });
+
+  cancelBtn.addEventListener('click', function() {
+    alert("Cancel button clicked!");
+  });
+
+  function enableButtons() {
+    [saveBtn, cancelBtn].forEach(btn => {
+      btn.classList.add("enabled");
+    });
+  }
+  setTimeout(enableButtons, 3000);
 }
