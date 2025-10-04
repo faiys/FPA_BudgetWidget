@@ -5,7 +5,7 @@ const error_msg = document.getElementById("error-msdid");
 
 // Onload run fetch data
 document.addEventListener("DOMContentLoaded", () => {
- RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults=true)
+ RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems")
 //  AddBudget('PnL_Raw_Report_JS', '', AllFetchArr=[])
 });
 
@@ -13,7 +13,11 @@ document.addEventListener("DOMContentLoaded", () => {
 async function fetch(ReportName, recordCursor, AllFetchArr){
     try{
         let criteriaVar = "";
-        if(ReportName === "COA_Report" && AllFetchArr.length  === 0){
+        if(ReportName === "Budget_Manager_Items_Js"){
+            
+            criteriaVar = "(Budget_Manager != null)"
+        }
+        else if(ReportName === "COA_Report" && AllFetchArr.length  === 0){
             criteriaVar = "(Class.Class != \"EQUITY\" && Class.Class != \"LIABILITY\" && Class.Class != \"ASSET\" && Status == \"ACTIVE\")"
         }
          var config = {
@@ -84,7 +88,7 @@ function UpdateRecordByID(ReportName,RecID, customer_Arr){
         ZOHO.CREATOR.DATA.updateRecordById(UpdateRec_config).then(function (Update_response) {
             if (Update_response.code == 3000) {
                 let AllFetchArr = [];
-                RenderBudgetTable("Budget_Manager_Items_Js", "", AllFetchArr, defaults=true);
+                RenderBudgetTable("Budget_Manager_Items_Js", "", AllFetchArr, defaults="budgetItems");
                 
                 // Submit Response
                 errorMsg("Item Updated.", "green")
@@ -113,7 +117,7 @@ function DeleteRecordByID(ReportName, RecID){
         ZOHO.CREATOR.DATA.deleteRecordById(Deleteconfig).then(function (Delete_response) {
         if (Delete_response.code == 3000) {
             let AllFetchArr = [];
-            RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults=true)
+            RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems")
 
             // Submit Response
             errorMsg("Item Deleted.", "green")
@@ -189,15 +193,13 @@ async function POSTRecord(FormName, customer_Arr){
 
 // Post Bulk API
 async function POSTBulkRecord(FormName, inputArr){
-    console.log("inputArr - ",inputArr)
      let payload = "";
     try{
         if(FormName === "Budget_Manager_Items" && inputArr){
             payload = {
-                "data": [inputArr]
+                "data": inputArr
             }
         }
-        console.log("payload = ",payload)
         var postRec_config = {
             app_name: AppName,
             form_name: FormName,
@@ -205,12 +207,11 @@ async function POSTBulkRecord(FormName, inputArr){
             payload: payload
         };
         const post_response = await ZOHO.CREATOR.PUBLISH.addRecords(postRec_config);
-        console.log("post_response = ",post_response)
         if (post_response.code == 3000) {
             return post_response
         }
         else{
-            console.log("POST rec error = ",post_response)
+            console.log("POST Bulk rec error = ",post_response)
             return post_response
         }    
     }

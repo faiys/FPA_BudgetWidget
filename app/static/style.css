@@ -25,6 +25,12 @@ body {
 }
 
 /* Header Card Styles */
+.main-collapse{
+  color: wheat;
+  text-align: justify;
+  cursor: pointer;
+}
+
 .header-card {
     background: linear-gradient(135deg, var(--head-orange), var( --head-darkOrange));
     border-radius: 12px;
@@ -436,6 +442,7 @@ table tbody th:nth-child(2) {
     text-wrap: nowrap;
     text-align: justify;
     position: relative;
+    cursor: pointer;
 }
 
 .fill-budget-value {
