@@ -21,6 +21,10 @@ function subMonth(n) {
 document.getElementById("openBudget").addEventListener("click", (e) => {
   e.preventDefault();
   document.getElementById("BudgetModal").style.display = "flex";
+  if(document.getElementById("PreBudModal").style.display === "flex")
+  {
+     document.getElementById("PreBudModal").style.display = "none";
+  }
 });
 
 document.getElementById("closeBudget").addEventListener("click", () => {
@@ -219,8 +223,7 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
   // console.log("mergerd - ", merged)
   RenderBudgetTable("", "",merged, defaults="addBudget")
 }
-function createBudgetButtons(mergedArr, BudgetFormArr){
-
+function createBudgetButtons(mergedArr, BudgetFormArr, type){
   const budgetSaveCancel = document.getElementById("budgetsave-cancel");
 
   budgetSaveCancel.innerHTML = "";
@@ -241,7 +244,13 @@ function createBudgetButtons(mergedArr, BudgetFormArr){
 
     // Add click listeners **after buttons are created**
   saveBtn.addEventListener('click', async function() {
-    const addbudgetResp = await POSTRecord("Budget_Manager", {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : BudgetFormArr.period});
+    if( type === "addBudget"){
+      var postMap = {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : BudgetFormArr.period};
+    }
+    else if(type === "prefillBudget"){
+      var postMap = {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : ""};
+    }
+    const addbudgetResp = await POSTRecord("Budget_Manager", postMap);
     if(addbudgetResp.code == 3000)
     {
       const updatedArr = mergedArr.map(item => ({
@@ -265,6 +274,8 @@ function createBudgetButtons(mergedArr, BudgetFormArr){
     }
     document.getElementById('budgetName').value = "";
     document.getElementById('budgetYear').value = "";
+    document.getElementById('PreBudName').value = "";
+    document.getElementById('lookupInput').value = "";
   });
 
   cancelBtn.addEventListener('click', function() {
@@ -273,6 +284,8 @@ function createBudgetButtons(mergedArr, BudgetFormArr){
     budgetSaveCancel.innerHTML = "";
     document.getElementById('budgetName').value = "";
     document.getElementById('budgetYear').value = "";
+    document.getElementById('PreBudName').value = "";
+    document.getElementById('lookupInput').value = "";
   });
 
   function enableButtons() {
@@ -281,4 +294,100 @@ function createBudgetButtons(mergedArr, BudgetFormArr){
     });
   }
   setTimeout(enableButtons, 3000);
+}
+
+
+
+
+
+
+// Prefill Previus budget popup
+document.getElementById("openPreBud").addEventListener("click", (e) => {
+  e.preventDefault();
+  document.getElementById("PreBudModal").style.display = "flex";
+   if(document.getElementById("BudgetModal").style.display === "flex")
+  {
+     document.getElementById("BudgetModal").style.display = "none";
+  }
+});
+
+document.getElementById("closePreBud").addEventListener("click", () => {
+  document.getElementById('PreBudName').value = "";
+  document.getElementById('lookupInput').value = "";
+  document.getElementById("PreBudModal").style.display = "none";  
+});
+
+const lookupInput = document.getElementById("lookupInput");
+const lookupList = document.getElementById("lookupList");
+const PreBudaddBtn = document.querySelector('.PreBudmodal-actions .primary');
+const PreBuderrorDiv = document.getElementById('PreBudError');
+
+// Populate Budget list dynamically
+function renderLookupList(filter = "") {
+  lookupList.innerHTML = "";
+  const filtered = window.budgetlookup.filter(item =>
+    item.name.toLowerCase().includes(filter.toLowerCase())
+  );
+  filtered.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "lookup-item";
+    div.textContent = item.name;
+    div.dataset.id = item.id;
+    div.addEventListener("click", () => {
+      lookupInput.value = item.name;
+      lookupInput.dataset.selectedId = item.id;
+      lookupList.style.display = "none";
+    });
+    lookupList.appendChild(div);
+  });
+  lookupList.style.display = filtered.length ? "block" : "none";
+}
+
+// Show Budget list on focus
+lookupInput.addEventListener("focus", () => {
+  renderLookupList();
+});
+
+// Budget Filter as user types
+lookupInput.addEventListener("input", e => {
+  renderLookupList(e.target.value);
+});
+
+// Hide on outside click Budget lookup
+document.addEventListener("click", e => {
+  if (!lookupInput.contains(e.target) && !lookupList.contains(e.target)) {
+    lookupList.style.display = "none";
+  }
+});
+
+// Prefill Budget Form Validation
+PreBudaddBtn.addEventListener('click', () => {
+  const prefilname = document.getElementById('PreBudName').value.trim();
+  const selectBudget = document.getElementById('lookupInput');
+
+  if (!selectBudget || !prefilname) {
+    PreBuderrorDiv.textContent = '⚠ Please fill in all fields!';
+    PreBuderrorDiv.style.display = 'block';
+    return;
+  }
+  PreBuderrorDiv.style.display = 'none';
+  document.getElementById("PreBudModal").style.display = "none";
+  // Call add budget fucn
+  PrefillGetBudget(selectBudget.dataset.selectedId, prefilname)
+});
+
+// get Prefil budget
+async function PrefillGetBudget(budgetID, prefilname){
+  let PrefillBudgetResp = await fetch("Budget_Manager_Items_Js", "prefilbudget", [budgetID])
+  if(PrefillBudgetResp){
+    PrefillBudgetResp.forEach(item => {
+      // If Budget_Manager exists, update its Name
+      if (item.Budget_Manager) {
+          item.Budget_Manager.Name = prefilname;
+          item.Budget_Manager.zc_display_value = prefilname;
+      }
+      item["Budget_Manager.Name"] = prefilname;
+    });
+    RenderBudgetTable("", "",PrefillBudgetResp, defaults="prefillBudget")
+  }
 }

@@ -67,29 +67,6 @@ body {
     margin-bottom: 0;
     text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
 }
-.action-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: flex-end;
-}
-
-.btn-action {
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    border-radius: 30px;
-    padding: 10px 20px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.btn-action:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
 .error-msg{
     text-align: center;
 }
@@ -122,9 +99,8 @@ body {
 /* Modal background */
 .budget-modal {
   display: none; 
-  position: fixed;
+  position: absolute;
   z-index: 9999;
-  background: rgba(0, 0, 0, 0.3);
   justify-content: center;
   align-items: center;
   margin-top: 28px;
@@ -147,6 +123,91 @@ body {
   color: #333;
   text-align: center;
 }
+
+/* Prefile previous budget */
+.PreBud-modal-link {
+  color: #1b6de0;    
+  text-decoration: none; 
+  display: flex;
+  align-items: center;
+  gap: 6px;              
+  transition: color 0.2s ease;
+}
+
+.PreBud-modal-link:hover {
+  text-decoration: underline;
+  color: rgb(3, 112, 221);       
+}
+
+/* Modal background */
+.PreBud-modal {
+  display: none; 
+  position: absolute;
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+  margin-top: 28px;
+  margin-left: 7rem;
+}
+
+/* Modal box */
+.PreBudmodal-content {
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  font-size: 13px;
+  width: 22rem; 
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.PreBudmodal-content h4 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #333;
+  text-align: center;
+}
+
+.lookup-container {
+  position: relative;
+  width: 100%;
+}
+
+#lookupInput {
+  width: 100%;
+  margin-bottom: 16px;
+  margin-top: 5px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.lookup-list {
+  position: absolute;
+  top: 65%;
+  left: 0;
+  right: 0px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 4px;
+  z-index: 99999;
+  display: none;
+  max-height: 150px; /* shows 3 rows before scroll */
+  overflow-y: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.lookup-item {
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.lookup-item:hover {
+  background-color: #e9f2ff;
+}
+
+
 
 /* Two-column form */
 .form-grid {
@@ -223,6 +284,12 @@ body {
   gap: 10px;
 }
 
+.PreBudmodal-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
 .btn {
   padding: 7px 14px;
   font-size: 13px;
@@ -387,16 +454,11 @@ table tbody th:nth-child(2) {
     border-collapse: collapse;
     text-align: center;
 }
-
 .budget-table th {
     background-color: var(--head-darkOrange);
     padding: 6px 15px;
-    /* text-align: center; */
-    /* font-weight: 600; */
     border-bottom: 2px solid var(--medium-gray);
     color:#fff; 
-    /* text-align:center;  */
-    /* font-size:0.9rem; */
     text-wrap: nowrap;
 }
 
@@ -410,9 +472,16 @@ table tbody th:nth-child(2) {
     color: var(--primary-blue);
     cursor: pointer;
     display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 8px;
     text-wrap: nowrap;
+}
+.budget-left {
+  display: flex;
+  align-items: center;
+  gap: 6px; 
+  cursor: pointer; 
 }
 
 .tdfont{
@@ -515,6 +584,26 @@ svg.icon {
 }
 .remove .fa-trash:hover {
   text-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
+  transition: all 0.6s ease;
+  transform: rotateZ(45deg);
+}
+
+.budget-delete .bi-trash2 {
+  opacity: 0;          
+  visibility: hidden;
+  cursor: pointer;
+  color: #c00;
+  font-size: 1.1rem;
+  transition: opacity 0.3s ease, transform 0.3s ease, text-shadow 0.3s ease;
+}
+
+.budget-name:hover .budget-delete .bi-trash2 {
+  opacity: 1;                
+  visibility: visible; 
+}
+
+.budget-delete .bi-trash2:hover {
+  text-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
 }
 
 .amount-cell {
@@ -591,7 +680,7 @@ svg.icon {
     opacity: 1;
 }
 .collapsed, .hidden-budget, .hidden-category {
-    display: none;
+    display: none!important;
 }
 
 /* Responsive Styles */

@@ -6,19 +6,23 @@ const error_msg = document.getElementById("error-msdid");
 // Onload run fetch data
 document.addEventListener("DOMContentLoaded", () => {
  RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems")
-//  AddBudget('PnL_Raw_Report_JS', '', AllFetchArr=[])
 });
 
 // Fetch Records
 async function fetch(ReportName, recordCursor, AllFetchArr){
     try{
         let criteriaVar = "";
-        if(ReportName === "Budget_Manager_Items_Js"){
+        if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget"){
             
             criteriaVar = "(Budget_Manager != null)"
         }
-        else if(ReportName === "COA_Report" && AllFetchArr.length  === 0){
+        else if(ReportName === "COA_Report" && AllFetchArr.length  === 0 && recordCursor != "prefilbudget"){
             criteriaVar = "(Class.Class != \"EQUITY\" && Class.Class != \"LIABILITY\" && Class.Class != \"ASSET\" && Status == \"ACTIVE\")"
+        }
+        else if(ReportName === "Budget_Manager_Items_Js" && AllFetchArr.length  > 0  && recordCursor === "prefilbudget"){
+            criteriaVar = "(Budget_Manager == "+AllFetchArr[0]+")"
+            recordCursor = "";
+            AllFetchArr = [];
         }
          var config = {
             app_name: AppName,
@@ -120,7 +124,9 @@ function DeleteRecordByID(ReportName, RecID){
             RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems")
 
             // Submit Response
-            errorMsg("Item Deleted.", "green")
+            setTimeout(() => {
+                errorMsg("Item Deleted.", "green")
+            }, 3000);
         }
         else{
                 console.log("Deleted rec error = ",Delete_response)
