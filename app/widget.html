@@ -6,27 +6,22 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="static/loader.css">
     <link rel="stylesheet" href="static/style.css">
+   
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- <script src="https://js.zohostatic.com/creator/widgets/version/1.0/widgetsdk-min.js"></script> -->
     <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
   </head>
   <body>
+    <!-- Pages -->
     <div class="container-fluid">
-
         <!-- Header Card -->         
         <div class="header-card">
             <div class="d-flex justify-content-between align-items-center">
                 <h1><i class="fas fa-chart-pie me-2"></i> Budget Management</h1>
-                <!-- <div>
-                    <button class="btn-action" id="addBudgetBtn">
-                        <i class="fas fa-plus-circle me-1"></i> Add Budget
-                    </button>
-                    <button class="btn-action" id="addAssumptionBtn">
-                        <i class="fas fa-calculator me-1"></i> Add Assumption
-                    </button>
-                </div> -->
             </div>
         </div>
         <!-- Show add and error message -->
@@ -104,7 +99,7 @@
                             <label for="PreBudName">Name</label>
                             <input type="text" id="PreBudName" placeholder="Enter name">
                         </div>
-                        <div class="PreBudform-group">
+                        <div class="form-group">
                             <label for="lookupInput" style="margin-top: 4px;">Select Budget</label>
                             <div class="lookup-container">
                                 <input type="text" id="lookupInput" placeholder="Search or select budget..." autocomplete="off">
@@ -120,12 +115,39 @@
                 </div>
             </div>
 
-
-            <a href="#" class="modal-link">
+            <!-- Add Assumption -->
+            <a href="#" class="Assum-modal-link" id="openAssum">
                 <i class="fa fa-lightbulb"></i> Add Assumption
              </a>
+             <div id="AssumModal" class="Assum-modal" style="display: none;">
+                <div class="Assummodal-content">
+                    <h4>Assumption</h4>
+                    <!-- Error message container -->
+                    <div id="AssumError" style="color:red; margin-bottom:10px; display:none;"></div>
+                    <div class="">
+                        <div class="form-group">
+                            <label for="AssumName">Name</label>
+                            <input type="text" id="AssumName" placeholder="Enter name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="assum-lookupInput">Select Budget</label>
+                            <div class="lookup-container">
+                                <input type="text" id="assum-lookupInput" placeholder="Search or select budget..." autocomplete="off">
+                                <div id="assum-lookupList" class="lookup-list"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="Assummodal-actions">
+                    <button class="btn primary">Add</button>
+                    <button class="btn cancel" id="closeAssum">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
              <div class="budgetsave-cancel" id="budgetsave-cancel">
-                <!-- add button in page.js -->
+                <!-- While add button show Save change and remove change button-->
             </div>
         </div>
         
@@ -140,12 +162,62 @@
                     </thead>
                     <tbody id="budgetTableBody">
                         <!-- Budget data will be populated here by JavaScript -->
+
+
+                        <!-- open assumption percentage popup -->
+                        <div id="AssumPercentModal" class="AssumPercent-modal" style="display: none;">
+                            <div class="AssumPercentmodal-content">
+                                <p style="margin: 7px;font-size: 12px;color:blue" id="percnt-win-name"></p>
+
+                                <!-- Error message -->
+                                <div id="AssumPercentError" class="error-msg" style="color:red; margin-bottom:10px; display:none;"></div>
+
+                                <!-- Two-column toggles -->
+                                <div class="form-row">
+                                    <div class="form-col">
+                                        <div class="switch-wrapper">
+                                        <input type="checkbox" id="TypeToggle">
+                                        <span class="slider"></span>
+                                        <span class="switch-label" id="TypeLabel">Amount</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic input field -->
+                                <div class="form-group" id="DynamicField">
+                                    <input type="number" id="AssumPercent" placeholder="Enter Amount" min="0">
+                                </div>
+
+                                <!-- Action buttons -->
+                                <div class="AssumPercentmodal-actions">
+                                <button class="btn primary">Add</button>
+                                <button class="btn cancel" id="closeAssumPercent">Cancel</button>
+                                </div>
+                            </div>
+                        </div>  
                     </tbody>
                 </table>
             </div>
         </div>
+
+        <!-- loader -->
+        <div id="loader" class="loader-container" style="display: none;">
+            <div class="fpa-loader">
+                <div class="letter letter-f">F</div>
+                <div class="letter letter-p">P</div>
+                <div class="letter letter-a">A</div>
+            </div>
+            <div class="loading-text">Loading...</div>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+            </div>
+            <div class="percentage">0%</div>
+        </div>
+        <!-- loader -->
+
     </div>
   </body>
+  <script src="static/assumption.js"></script>
   <script src="static/budget.js"></script>
   <script src="static/render_table.js"></script>
   <script src="static/zoho.js"></script>

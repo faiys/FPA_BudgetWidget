@@ -3,6 +3,8 @@ const Actual_months = ['Actual_January','Actual_February','Actual_March','Actual
 const accountColor = "style='background:#f5f0eb'";
 const monthsMap = {Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5,Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11};
 
+const budgetTableBody = document.getElementById("budgetTableBody");
+
 // Cpnvert AddedTime String to DateTime
 function parseAddedTime(s) {
   if (!s) return 0;
@@ -29,7 +31,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     if(defaults == "budgetItems" && ReportName){
         arrData = await fetch(ReportName, recordCursor, AllFetchArr);
     }
-    else if(defaults === "addBudget" || defaults === "prefillBudget"){
+    else if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget"){
         arrData = AllFetchArr;
     }
     arrData.sort((a, b) => parseAddedTime(b.Added_Time) - parseAddedTime(a.Added_Time));
@@ -293,10 +295,24 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                 accountRow.setAttribute('data-category', cls_element.class);
                 accountRow.setAttribute('data-category-id', cls_element.classId);
                 accountRow.setAttribute('data-account', Account_element.accountId);
+                // For Add Assumption increase or decrease percentage
+                accountRow.setAttribute('data-row-id', Account_element.accountId);
+                accountRow.setAttribute('data-budgetname', budgetN.name);
+                accountRow.setAttribute('data-accountname', Account_element.accountName);
+                // || defaults === "budgetItems"
                 accountRow.innerHTML = `
                     <td ${accountColor}></td>
                     <td colspan="3" class="account-td ${"id-"+Account_element.accountId}-category" ${accountColor}>
-                        ${Account_element.accountName}
+                        ${(defaults === "Assumption_budget") 
+                            ? `<a id="openAssumPercent" class="ass-percnt-moda-link ms-auto" href="#" 
+                                data-action="assumption-percentage-row"
+                                data-accountname ="${Account_element.accountName}"
+                                title="Inc/Dec Assumption" 
+                                onclick="event.stopPropagation();"> 
+                                <i class="bi bi-percent"></i>
+                            </a>`: ``
+                        }
+                        <span style="margin-left: 5px;">${Account_element.accountName}<span>
                         <a class="fill-budget-value ms-auto" href="#" data-action="add-row">
                             <small>Add row</small> 
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon align-middle">
@@ -309,7 +325,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                 if(defaults === "addBudget" || defaults === "prefillBudget"){
                     Object.keys(Account_element).forEach(key => {
                         if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
-                            accountRow.innerHTML += `<td class="amount-cell">${formatIndia(Account_element[key])}</td>`;
+                            accountRow.innerHTML += `<td class="amount-cell actual-colunm">${formatIndia(Account_element[key])}</td>`;
                         }
                     });
                 }
@@ -335,10 +351,12 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                     const customerRow = document.createElement('tr');
                     customerRow.classList.add('customer-row');
                     customerRow.setAttribute('data-budget-id', customer_element.budgetId);
+                    customerRow.setAttribute('data-budgetname', budgetN.name);
                     customerRow.setAttribute('data-year', budgetN.year);
                     customerRow.setAttribute('data-category', cls_element.class);
                     customerRow.setAttribute('data-category-id', cls_element.classId);
                     customerRow.setAttribute('data-account', Account_element.accountId);
+                    customerRow.setAttribute('data-accountname', Account_element.accountName);
                     customerRow.setAttribute('data-itemid', customer_element.item_id);
                     
                     let customerrowHTML= `
@@ -351,10 +369,10 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                             data-account="${Account_element.accountId}" 
                         >
                     </td>`
-                    if(defaults === "addBudget" || defaults === "prefillBudget"){
+                    if(defaults === "addBudget" || defaults === "prefillBudget" ){
                         Object.keys(customer_element).forEach(key => {
                             if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
-                                customerrowHTML += `<td class="amount-cell actual-cell" data-actual-month="${key}">${formatIndia(customer_element[key])}</td>`;
+                                customerrowHTML += `<td class="amount-cell actual-cell actual-colunm" data-actual-month="${key}">${formatIndia(customer_element[key])}</td>`;
                             }
                         });
                     }
@@ -401,7 +419,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
 
 
                     // Attach change event for this row for final array
-                    if(defaults === "addBudget" || defaults === "prefillBudget"){
+                    if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget"){
                         attachInputListeners(customerRow); 
                         attachInputListenersCust(customerRow);
                     }                    
@@ -419,7 +437,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     });
 
     // get Final output arr
-     if(defaults === "addBudget" || defaults === "prefillBudget"){
+     if(defaults === "addBudget" || defaults === "prefillBudget"|| defaults === "Assumption_budget"){
         let finalArr = [];
         FinalTableArr(finalArr)
      }
@@ -468,6 +486,9 @@ function FinalTableArr(finalArr){
         finalobj.Year_field = row.getAttribute("data-year");
         finalobj.Class = row.getAttribute("data-category-id");
         finalobj.Account_Name = row.getAttribute("data-account");
+        finalobj.class_name = row.getAttribute("data-category")
+        finalobj.budget_name = row.getAttribute("data-budgetname")
+        finalobj.account_name = row.getAttribute("data-accountname")
 
         // customer name from input
         const customerInput = row.querySelector(".amount-input-text");
@@ -498,6 +519,7 @@ function FinalTableArr(finalArr){
 
         // push structured object
         finalArr.push(finalobj);
+        window.finalArrs = finalArr;
     });
 
     // Create budget bulk API
@@ -510,7 +532,12 @@ function FinalTableArr(finalArr){
     }
     else if(defaults === "prefillBudget"){
         const prefilname = document.getElementById('PreBudName').value.trim();
+        const Assumname = document.getElementById('AssumName').value.trim();
         createBudgetButtons(finalArr, {name:prefilname, year:finalArr[0].Year_field, month:"January"}, "prefillBudget");
+    }
+    else if(defaults === "Assumption_budget"){
+        const Assumname = document.getElementById('AssumName').value.trim();
+        createBudgetButtons(finalArr, {name:Assumname, year:finalArr[0].Year_field, month:"January"}, "Assumption_budget");
     }
 }
 
@@ -700,19 +727,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const tr = td.closest('tr');
 
             let budgetId = tr.dataset.budgetId;
+            let budgetname = tr.dataset.budgetname;
             let year = tr.dataset.year;
             let category = tr.dataset.category;
             let categoryId = tr.dataset.categoryId;
             let account = tr.dataset.account;
+            let account_name = tr.dataset.accountname;
+            let itemID = tr.dataset.item_id;
         
             // Create new row
             const newRow = document.createElement('tr');
             newRow.classList.add('customer-row');
             newRow.setAttribute('data-budget-id', budgetId);
+            newRow.setAttribute('data-budgetname', budgetname);
             newRow.setAttribute('data-year', year);
             newRow.setAttribute('data-category', category);
             newRow.setAttribute('data-category-id', categoryId);
             newRow.setAttribute('data-account', account);
+            newRow.setAttribute('data-accountname', account_name);
+            newRow.setAttribute('data-itemid', itemID);
+
             newRow.innerHTML = `
                <td></td>
                 <td colspan="3" class="customer-td editing-new-row">
@@ -724,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     data-account="${account}" 
                     >
                 </td>`
-                if(defaults === "addBudget" || defaults === "prefillBudget")
+                if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget")
                 {
                     var addTD = window.tdCount - 15;
                     for (let index = 0; index < addTD; index++) {
@@ -760,7 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Insert the new row just after the current row
             tr.insertAdjacentElement('afterend', newRow);
-            if(defaults === "addBudget" || defaults === "prefillBudget"){
+            if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget"){
                 attachInputListeners(newRow); 
                 attachInputListenersCust(newRow);
                 FinalTableArr(finalArr=[]);      
@@ -812,6 +846,7 @@ document.addEventListener('click', (e) => {
 
 // Message Text
 function errorMsg(text, color){
+    const error_msg = document.getElementById("error-msdid");
     error_msg.innerHTML = text
     error_msg.style.display = "block";
     error_msg.style.color = color;
@@ -830,4 +865,94 @@ function MaintableCollapse(action = "collapse"){
     } else {
         allRows.forEach(row => row.classList.remove("hidden-budget"));
     }
+}
+
+
+window.onload = fetchData();
+// Loader
+function showLoader() {
+  document.getElementById("loader").style.display = "flex";
+  FPALoader();
+}
+
+function hideLoader() {
+  document.getElementById("loader").style.display = "none";
+}
+function fetchData() {
+  showLoader();
+
+  // Simulate an async operation (e.g., API call)
+  setTimeout(() => {
+    // console.log("Data loaded.");
+    hideLoader();
+  }, 6000);
+}
+
+// Loaders
+function FPALoader() {
+    const letters = document.querySelectorAll('.letter');
+    const progressBar = document.querySelector('.progress-bar');
+    const percentageText = document.querySelector('.percentage');
+    
+    // Function to animate each letter
+    function animateLetter(letter, delay) {
+        setTimeout(() => {
+            // Fade in
+            letter.style.opacity = '1';
+            
+            // Add rotation and shaking animation after a small delay
+            setTimeout(() => {
+                letter.classList.add('animate');
+            }, 200);
+        }, delay);
+    }
+    
+    // Function to update progress bar color based on current letter
+    function updateProgressColor(progress) {
+        if (progress <= 33) {
+            // F phase - Red
+            progressBar.style.background = '#dc3545';
+        } else if (progress <= 66) {
+            // P phase - Blue with gradient from red
+            const blueIntensity = (progress - 33) / 33;
+            progressBar.style.background = `linear-gradient(90deg, 
+                #dc3545 0%, 
+                rgba(220, 53, 69, ${1 - blueIntensity}) 50%,
+                #0d6efd 100%)`;
+        } else {
+            // A phase - Yellow with gradient from blue
+            const yellowIntensity = (progress - 66) / 34;
+            progressBar.style.background = `linear-gradient(90deg, 
+                #dc3545 0%, 
+                #0d6efd 33%, 
+                rgba(13, 110, 253, ${1 - yellowIntensity}) 66%,
+                #ffc107 100%)`;
+        }
+    }
+    
+    // Animate letters in sequence
+    animateLetter(letters[0], 300);  // F
+    animateLetter(letters[1], 1800); // P (after F animation completes)
+    animateLetter(letters[2], 3300); // A (after P animation completes)
+    
+    // Animate progress bar
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += 1;
+        progressBar.style.width = `${progress}%`;
+        percentageText.textContent = `${progress}%`;
+        
+        // Update progress bar color based on current phase
+        updateProgressColor(progress);
+        
+        if (progress >= 100) {
+            clearInterval(progressInterval);
+            
+            // After loading is complete
+            setTimeout(() => {
+                document.querySelector('.loading-text').textContent = 'Ready!';
+                percentageText.textContent = 'Complete!';
+            }, 500);
+        }
+    }, 50);
 }

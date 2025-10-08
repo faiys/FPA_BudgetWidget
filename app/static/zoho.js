@@ -12,14 +12,14 @@ document.addEventListener("DOMContentLoaded", () => {
 async function fetch(ReportName, recordCursor, AllFetchArr){
     try{
         let criteriaVar = "";
-        if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget"){
+        if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
             
             criteriaVar = "(Budget_Manager != null)"
         }
-        else if(ReportName === "COA_Report" && AllFetchArr.length  === 0 && recordCursor != "prefilbudget"){
+        else if(ReportName === "COA_Report" && AllFetchArr.length  === 0 && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
             criteriaVar = "(Class.Class != \"EQUITY\" && Class.Class != \"LIABILITY\" && Class.Class != \"ASSET\" && Status == \"ACTIVE\")"
         }
-        else if(ReportName === "Budget_Manager_Items_Js" && AllFetchArr.length  > 0  && recordCursor === "prefilbudget"){
+        else if(ReportName === "Budget_Manager_Items_Js" && AllFetchArr.length  > 0  && recordCursor === "prefilbudget" || recordCursor === "Assumption_budget"){
             criteriaVar = "(Budget_Manager == "+AllFetchArr[0]+")"
             recordCursor = "";
             AllFetchArr = [];

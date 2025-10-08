@@ -5,6 +5,11 @@ const startYear = currentYear > 2024 ? 2024 : currentYear;
 const addBtn = document.querySelector('.budgetmodal-actions .primary');
 const errorDiv = document.getElementById('budgetError');
 
+const budPop = document.getElementById("BudgetModal");
+const prefillbud_pop =document.getElementById("PreBudModal");
+const assumPop = document.getElementById("AssumModal");
+const AssumPercnPop = document.getElementById("AssumPercentModal");
+
 function NowMonth(){
   let d = new Date();
   return d.getMonth() + 1;
@@ -20,17 +25,25 @@ function subMonth(n) {
 // New Modal budget Popups
 document.getElementById("openBudget").addEventListener("click", (e) => {
   e.preventDefault();
-  document.getElementById("BudgetModal").style.display = "flex";
-  if(document.getElementById("PreBudModal").style.display === "flex")
+  budPop.style.display = "flex";
+  if(prefillbud_pop.style.display === "flex")
   {
-     document.getElementById("PreBudModal").style.display = "none";
+     prefillbud_pop.style.display = "none";
+  }
+  if(assumPop.style.display === "flex")
+  {
+     assumPop.style.display = "none";
+  }
+  if(AssumPercnPop.style.display === "flex")
+  {
+     AssumPercnPop.style.display = "none";
   }
 });
 
 document.getElementById("closeBudget").addEventListener("click", () => {
   document.getElementById('budgetName').value = "";
   document.getElementById('budgetYear').value = "";
-  document.getElementById("BudgetModal").style.display = "none";
+  budPop.style.display = "none";
   
 });
 
@@ -62,7 +75,7 @@ addBtn.addEventListener('click', () => {
     return;
   }
   errorDiv.style.display = 'none';
-  document.getElementById("BudgetModal").style.display = "none";
+  budPop.style.display = "none";
   // Call add budget fucn
   AddBudget('PnL_Raw_Report_JS', '', AllFetchArr=[])
 });
@@ -244,10 +257,14 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
 
     // Add click listeners **after buttons are created**
   saveBtn.addEventListener('click', async function() {
+
     if( type === "addBudget"){
       var postMap = {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : BudgetFormArr.period};
     }
     else if(type === "prefillBudget"){
+      var postMap = {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : ""};
+    }
+    else if(type === "Assumption_budget"){
       var postMap = {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : ""};
     }
     const addbudgetResp = await POSTRecord("Budget_Manager", postMap);
@@ -276,6 +293,25 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
     document.getElementById('budgetYear').value = "";
     document.getElementById('PreBudName').value = "";
     document.getElementById('lookupInput').value = "";
+    document.getElementById('AssumName').value = "";
+    document.getElementById('assum-lookupInput').value = "";
+
+    if(budPop.style.display === "flex")
+    {
+      budPop.style.display = "none";
+    }
+    if(prefillbud_pop.style.display === "flex")
+    {
+      prefillbud_pop.style.display = "none";
+    }
+    if(assumPop.style.display === "flex")
+    {
+      assumPop.style.display = "none";
+    }
+    if(AssumPercnPop.style.display === "flex")
+    {
+      AssumPercnPop.style.display = "none";
+    }
   });
 
   cancelBtn.addEventListener('click', function() {
@@ -286,6 +322,25 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
     document.getElementById('budgetYear').value = "";
     document.getElementById('PreBudName').value = "";
     document.getElementById('lookupInput').value = "";
+    document.getElementById('AssumName').value = "";
+    document.getElementById('assum-lookupInput').value = "";
+
+    if(budPop.style.display === "flex")
+    {
+      budPop.style.display = "none";
+    }
+    if(prefillbud_pop.style.display === "flex")
+    {
+      prefillbud_pop.style.display = "none";
+    }
+    if(assumPop.style.display === "flex")
+    {
+      assumPop.style.display = "none";
+    }
+    if(AssumPercnPop.style.display === "flex")
+    {
+      AssumPercnPop.style.display = "none";
+    }
   });
 
   function enableButtons() {
@@ -304,17 +359,25 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
 // Prefill Previus budget popup
 document.getElementById("openPreBud").addEventListener("click", (e) => {
   e.preventDefault();
-  document.getElementById("PreBudModal").style.display = "flex";
-   if(document.getElementById("BudgetModal").style.display === "flex")
+  prefillbud_pop.style.display = "flex";
+   if(budPop.style.display === "flex")
   {
-     document.getElementById("BudgetModal").style.display = "none";
+     budPop.style.display = "none";
+  }
+  if(assumPop.style.display === "flex")
+  {
+     assumPop.style.display = "none";
+  }
+  if(AssumPercnPop.style.display === "flex")
+  {
+     AssumPercnPop.style.display = "none";
   }
 });
 
 document.getElementById("closePreBud").addEventListener("click", () => {
   document.getElementById('PreBudName').value = "";
   document.getElementById('lookupInput').value = "";
-  document.getElementById("PreBudModal").style.display = "none";  
+  prefillbud_pop.style.display = "none";  
 });
 
 const lookupInput = document.getElementById("lookupInput");
@@ -365,13 +428,13 @@ PreBudaddBtn.addEventListener('click', () => {
   const prefilname = document.getElementById('PreBudName').value.trim();
   const selectBudget = document.getElementById('lookupInput');
 
-  if (!selectBudget || !prefilname) {
+  if (!selectBudget.value || !prefilname) {
     PreBuderrorDiv.textContent = '⚠ Please fill in all fields!';
     PreBuderrorDiv.style.display = 'block';
     return;
   }
   PreBuderrorDiv.style.display = 'none';
-  document.getElementById("PreBudModal").style.display = "none";
+  prefillbud_pop.style.display = "none";
   // Call add budget fucn
   PrefillGetBudget(selectBudget.dataset.selectedId, prefilname)
 });
