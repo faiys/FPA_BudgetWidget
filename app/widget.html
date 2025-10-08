@@ -201,22 +201,25 @@
         </div>
 
         <!-- loader -->
-        <div id="loader" class="loader-container" style="display: none;">
-            <div class="fpa-loader">
-                <div class="letter letter-f">F</div>
-                <div class="letter letter-p">P</div>
-                <div class="letter letter-a">A</div>
+        <div id="loader-overlay" class="loader-overlay" style="display: none;">
+            <div id="loader" class="loader-container">
+                <div class="fpa-loader">
+                    <div class="letter letter-f">F</div>
+                    <div class="letter letter-p">P</div>
+                    <div class="letter letter-a">A</div>
+                </div>
+                <div class="loading-text">Loading...</div>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="percentage">0%</div>
             </div>
-            <div class="loading-text">Loading...</div>
-            <div class="progress">
-                <div class="progress-bar" role="progressbar" style="width: 0%"></div>
-            </div>
-            <div class="percentage">0%</div>
         </div>
         <!-- loader -->
 
     </div>
   </body>
+  <script src="static/loader.js"></script>
   <script src="static/assumption.js"></script>
   <script src="static/budget.js"></script>
   <script src="static/render_table.js"></script>

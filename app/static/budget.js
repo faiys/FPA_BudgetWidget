@@ -257,7 +257,7 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
 
     // Add click listeners **after buttons are created**
   saveBtn.addEventListener('click', async function() {
-
+    
     if( type === "addBudget"){
       var postMap = {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : BudgetFormArr.period};
     }
@@ -267,6 +267,7 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
     else if(type === "Assumption_budget"){
       var postMap = {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : ""};
     }
+    LoadingScreen();
     const addbudgetResp = await POSTRecord("Budget_Manager", postMap);
     if(addbudgetResp.code == 3000)
     {
