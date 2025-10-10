@@ -357,11 +357,22 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                     customerRow.setAttribute('data-category-id', cls_element.classId);
                     customerRow.setAttribute('data-account', Account_element.accountId);
                     customerRow.setAttribute('data-accountname', Account_element.accountName);
+                    customerRow.setAttribute('data-customername', customer_element.customer);
                     customerRow.setAttribute('data-itemid', customer_element.item_id);
                     
                     let customerrowHTML= `
                     <td></td>
                     <td colspan="3" class="customer-td">
+                        <a class="autofill-value ms-auto" href="#" 
+                        data-action="autofill-row" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#autofillModal">
+                            <small>Autofill</small> 
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon align-middle">
+                                <path fill="#208EFF" d="M5 256c0 138.6 112.4 251 251 251s251-112.4 251-251S394.6 5 256 5 5 117.4 5 256zm249.2-130.7l113 113c4.9 4.9 7.3 11.3 7.3 17.7 0 6.4-2.4 12.8-7.3 17.7l-113 113c-9.8 9.8-25.6 9.8-35.4 0-9.8-9.8-9.8-25.6 0-35.4l95.4-95.4-95.4-95.4c-9.8-9.8-9.8-25.6 0-35.4 9.8-9.6 25.6-9.6 35.4.2z">
+                                </path>
+                            </svg>
+                        </a>
                         <input type="text" class="amount-input-text" value="${customer_element.customer}" 
                             data-budget-id="${customer_element.budgetId}" 
                             data-category="${cls_element.class}" 

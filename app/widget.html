@@ -163,7 +163,6 @@
                     <tbody id="budgetTableBody">
                         <!-- Budget data will be populated here by JavaScript -->
 
-
                         <!-- open assumption percentage popup -->
                         <div id="AssumPercentModal" class="AssumPercent-modal" style="display: none;">
                             <div class="AssumPercentmodal-content">
@@ -197,6 +196,76 @@
                         </div>  
                     </tbody>
                 </table>
+
+                <!-- Open autofill popup -->
+                <div class="modal fade" id="autofillModal" tabindex="-1" aria-labelledby="autofillModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="autofillModalLabel">Autofill</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Autofill Amount By Section -->
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-md-4 form-group">
+                                        <label for="autofillMethod" class="form-label section-title">Autofill Amount By</label>
+                                        <select class="form-select" id="autofillMethod">
+                                            <option value="fixed" selected>Apply fixed amount for each period</option>
+                                            <option value="adjustment">Adjustment Amount</option>
+                                            <option value="fixed-percentage">Apply fixed Percentage for each period</option>
+                                            <option value="adj-percentage">Adjustment Percentage</option>
+                                        </select>
+                                    </div>
+                                
+                                    <div class="col-md-4 form-group">
+                                        <label for="autofill-amountInput" class="form-label">Amount</label>
+                                        <input type="number" class="form-control amount-input" id="autofill-amountInput" value="" min="0">
+                                    </div>
+                                    <div class="col-md-4 form-group percentageInput-container" id="autofillpercentageInpuContainer">
+                                        <label for="autofill-percentageInput" class="form-label">Percentage</label>
+                                        <input type="number" class="form-control amount-input" id="autofill-percentageInput" value="" min="0">
+                                    </div>
+                                    <div class="col-md-4 form-group first-period-container" id="firstPeriodContainer">
+                                        <label for="firstPeriodAmount" class="form-label">First period's amount</label>
+                                        <input type="number" class="form-control amount-input" id="firstPeriodAmount" value="" min="0">
+                                    </div>
+                                </div>
+
+                                <div class="divider"></div>
+
+                                <!-- Preview Section -->
+                                <div>
+                                    <h6 class="section-title">PREVIEW</h6>
+                                    <table class="preview-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Customer</th>
+                                                <th>JAN</th>
+                                                <th>FEB</th>
+                                                <th>MAR</th>
+                                                <th>APR</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td id="autofill-accountname" style="text-align: left;">Revenue</td>
+                                                <td id="janValue">0</td>
+                                                <td id="febValue">0</td>
+                                                <td id="marValue">0</td>
+                                                <td id="aprValue">0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-apply" id="applyBtn">Apply</button>
+                                <button type="button" class="btn btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -219,6 +288,7 @@
 
     </div>
   </body>
+  <script src="static/autofill.js"></script>
   <script src="static/loader.js"></script>
   <script src="static/assumption.js"></script>
   <script src="static/budget.js"></script>

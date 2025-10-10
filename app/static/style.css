@@ -731,11 +731,30 @@ svg.icon {
     fill: currentColor;
 }
 
+.autofill-value {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    position: absolute;
+    right: 8px; /* adjust spacing from td end */
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+}
+
+.customer-td:hover .autofill-value {
+    visibility: visible;
+    opacity: 1;
+}
+
 .customer-td{
-    padding-left: 5rem !important;
+    padding-left: 4rem !important;
     text-wrap: nowrap;
     text-align: justify;
-    min-width: 23rem;
+    min-width: 26rem;
 }
 
 /* Hide icons by default */
@@ -844,7 +863,7 @@ svg.icon {
 }
 
 .amount-input-text {
-    width: 100%;
+    width: 81%;
     border:none;
     background: transparent;
     border-radius: 4px;
@@ -874,6 +893,86 @@ svg.icon {
 .collapsed, .hidden-budget, .hidden-category {
     display: none!important;
 }
+
+/* Autofill modal Popup */
+
+.modal-content {
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border: none;
+}
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+  padding: 3px 20px;
+  background-color: #f8f9fa;
+}
+.modal-body {
+  padding: 20px;
+}
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+}
+.section-title {
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 15px;
+  color: #212529;
+}
+.form-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+/* .amount-input {
+  max-width: 200px;
+} */
+.preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+.preview-table th, .preview-table td {
+  border: 1px solid #dee2e6;
+  padding: 10px 35px;
+  text-align: center;
+}
+.preview-table th {
+  background-color: #f0f2f5;
+  font-weight: 600;
+  font-size: 12px;
+  color: #495057;
+}
+.preview-table td {
+  background-color: white;
+}
+.divider {
+  height: 1px;
+  background-color: #dee2e6;
+  margin: 20px 0;
+}
+/* .form-select {
+  max-width: 300px;
+}
+.form-control:focus, .form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+} */
+.modal-title {
+  font-weight: 600;
+  color: #212529;
+}
+.first-period-container {
+  display: none;
+}
+.percentageInput-container{
+  display:none;
+}
+
+
+
+
 
 /* Responsive Styles */
 @media (max-width: 768px) {

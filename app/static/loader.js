@@ -1,7 +1,7 @@
 window.onload = LoadingScreen();
 
 function LoadingScreen() {
-  showFPALoader();
+//   showFPALoader();
   setTimeout(() => {
     document.getElementById("loader-overlay").style.display = "none";
   }, 3000);
