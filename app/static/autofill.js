@@ -1,3 +1,9 @@
+// Grab modal elements
+const autofillModal = document.getElementById('autofillModal');
+const closeAutofill = document.getElementById('closeAutofill');
+const cancelAutofill = document.getElementById('cancelAutofill');
+const applyBtn = document.getElementById('applyAutofill');
+
 const autofillMethod = document.getElementById('autofillMethod');
 const firstPeriodContainer = document.getElementById('firstPeriodContainer');
 const firstPeriodAmount = document.getElementById('firstPeriodAmount');
@@ -5,49 +11,51 @@ const janValue = document.getElementById('janValue');
 const febValue = document.getElementById('febValue');
 const marValue = document.getElementById('marValue');
 const aprValue = document.getElementById('aprValue');
-const applyBtn = document.getElementById('applyBtn');
-
 const autofill_Table_accountname = document.getElementById("autofill-accountname");
 const autofill_Table_amount = document.getElementById("autofill-amountInput");
 const autofillPercentageInput = document.getElementById("autofill-percentageInput");
 const autofillpercentageInpuContainer = document.getElementById('autofillpercentageInpuContainer');
 let finalMonthArr = [];
+let activeRow = null;
 
-// Initialize once at the top close Popup
-const autofillModalEl = document.getElementById('autofillModal');
-const autofillModal = new bootstrap.Modal(autofillModalEl, {
-    backdrop: true,
-    keyboard: true
+// Open modal when <a> clicked
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.autofill-value');
+  if (!btn) return;
+
+  e.preventDefault();
+  
+  autofillModal.style.display = 'flex';
+  requestAnimationFrame(() => autofillModal.classList.add('show'));
+  document.body.style.overflow = 'hidden';
+
+  // Open Popup Auto Pupluate Data 
+  OpenPopupAutoPupluateData(btn);
 });
 
-
 // Autofill popup
-
-document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.autofill-value');
+function OpenPopupAutoPupluateData(btn){
     if (btn) {
 
         const td = btn.closest('td');
         const tr = td.closest('tr');
+        activeRow = tr; 
         const inputs = tr.querySelectorAll('input');
         resetAutofillPop()
 
         currentInputArr = [];
         inputs.forEach((input, idx) => {
-            // if (idx < 2) { 
-                currentInputArr.push(input.value);
-            // }
+            currentInputArr.push(input.value);
         });
+
         const firstMonthval = parseNumber(currentInputArr[1]);
         autofill_Table_accountname.innerHTML = currentInputArr[0];
         autofill_Table_amount.value = firstMonthval;
-
 
         updatePreview();
 
         autofill_Table_amount.addEventListener('input', updatePreview);
         autofillMethod.addEventListener('change', function() {
-        // Show/hide first period amount based on selection
             if (this.value === 'adjustment' || this.value === 'adj-percentage') {
                 firstPeriodContainer.style.display = 'block';
             } else {
@@ -62,48 +70,8 @@ document.addEventListener('click', (e) => {
         });
         firstPeriodAmount.addEventListener('input', updatePreview);
         autofillPercentageInput.addEventListener('input', updatePreview);
-        
-        // let budgetId = tr.dataset.budgetId;
-        // let budgetname = tr.dataset.budgetname;
-        // let year = tr.dataset.year;
-        // let category = tr.dataset.category;
-        // let categoryId = tr.dataset.categoryId;
-        // let account = tr.dataset.account;
-        // let account_name = tr.dataset.accountname;
-        // let customername = tr.dataset.customername;
-        // let itemID = tr.dataset.itemid;
-        // console.log(budgetname,category,account_name,customername,itemID)
-        
-        console.log("actual recort data - ",currentInputArr)
-
-        // Save auto fill button action
-        applyBtn.addEventListener('click', function() {
-            const methodBtn = autofillMethod.value;
-            const amount = autofill_Table_amount.value;
-            let finalMonthArrsss = [currentInputArr[0], ...finalMonthArr.map(v => v.toLocaleString())];
-            console.log("finalMonthArrsss - ",finalMonthArrsss)
-            inputs.forEach((input, idx) => {
-                if (finalMonthArrsss[idx] !== undefined) {
-                    // input.classList.add('editing')
-                    input.value = finalMonthArrsss[idx];
-                    let Finaltd = input.closest('td');
-                    if (Finaltd) Finaltd.classList.add('editing');
-                }
-            });
-            
-            // close popup and remove classes.
-            autofillModal.hide();
-            // Remove leftover backdrops
-            document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-            // Reset body classes & styles
-            document.body.classList.remove('modal-open');
-            document.body.style.removeProperty('overflow');
-            document.body.style.removeProperty('padding-right');
-        });
-
     }
-});
-
+}
 // Function to update preview table
 function updatePreview() {
     const method = autofillMethod.value;
@@ -155,10 +123,9 @@ function updatePreview() {
                 finalMonthArr.push(idx === 0 ? firstPeriod : firstPeriod + (amount + fixedPercentageAmts) * idx);
             });
             break;
-    }
+    }  
     return finalMonthArr
 }
-
 function resetAutofillPop(){
     if(firstPeriodContainer.style.display = 'flex'){
         firstPeriodContainer.style.display = 'none';
@@ -170,3 +137,41 @@ function resetAutofillPop(){
     autofillPercentageInput.value = null;
     firstPeriodAmount.value = null;
 }
+// Single click handler for apply button
+applyBtn.addEventListener('click', function () {
+    if (!activeRow) return; 
+
+    const inputs = activeRow.querySelectorAll('input');
+    let finalMonthArrsss = [currentInputArr[0], ...finalMonthArr.map(v => v.toLocaleString())];
+
+    inputs.forEach((input, idx) => {
+        if (finalMonthArrsss[idx] !== undefined) {
+        input.value = finalMonthArrsss[idx];
+        const Finaltd = input.closest('td');
+        if (Finaltd) Finaltd.classList.add('editing');
+        }
+    });
+    // Add this row in finnal arr to final update.
+    let finalArr = [];
+    FinalTableArr(finalArr);
+    // Enable add icon in that row using focusin
+    const AmountInput = document.querySelector('.amount-input');
+    handleFocusIn({ target: AmountInput }); 
+
+    // close popup
+    closeAutofillModalFn();
+});
+// Close modal
+function closeAutofillModalFn() {
+  autofillModal.classList.remove('show');
+  setTimeout(() => {
+    autofillModal.style.display = 'none';
+    document.body.style.overflow = '';
+  }, 300);
+}
+// Close modal events
+closeAutofill.addEventListener('click', closeAutofillModalFn);
+cancelAutofill.addEventListener('click', closeAutofillModalFn);
+autofillModal.addEventListener('click', (e) => {
+  if (e.target === autofillModal) closeAutofillModalFn();
+});

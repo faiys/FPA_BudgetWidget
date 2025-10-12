@@ -61,6 +61,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
         }, {})
     );
 
+    document.getElementById("total-budgetID").innerHTML = BudgetNameArr.length;
     // getting this budget data pass to previous budget drobdown
     window.budgetlookup  = BudgetNameArr
 
@@ -167,7 +168,6 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     }, {})
     );
     customerArr.sort((a, b) => a.customer.localeCompare(b.customer));
-
     // Header 
     const actualMonthsInData = new Set();
     BudgetNameArr.forEach(budgetN => {
@@ -365,8 +365,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                     <td colspan="3" class="customer-td">
                         <a class="autofill-value ms-auto" href="#" 
                         data-action="autofill-row" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#autofillModal">
+                        data-itemid ="${customer_element.item_id}">
                             <small>Autofill</small> 
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon align-middle">
                                 <path fill="#208EFF" d="M5 256c0 138.6 112.4 251 251 251s251-112.4 251-251S394.6 5 256 5 5 117.4 5 256zm249.2-130.7l113 113c4.9 4.9 7.3 11.3 7.3 17.7 0 6.4-2.4 12.8-7.3 17.7l-113 113c-9.8 9.8-25.6 9.8-35.4 0-9.8-9.8-9.8-25.6 0-35.4l95.4-95.4-95.4-95.4c-9.8-9.8-9.8-25.6 0-35.4 9.8-9.6 25.6-9.6 35.4.2z">
@@ -532,7 +531,7 @@ function FinalTableArr(finalArr){
         finalArr.push(finalobj);
         window.finalArrs = finalArr;
     });
-
+    
     // Create budget bulk API
     if(defaults === "addBudget"){
         const enter_name = document.getElementById('budgetName').value.trim();
@@ -622,7 +621,7 @@ function parseNumber(x) {
 }
 
 // Attach to all .amount-input fields
-document.addEventListener('focusin', e => {
+function handleFocusIn(e) {
     const cell = e.target.closest('.amount-cell:not(.editing-new-row), .customer-td:not(.editing-new-row)');
     if (!cell) return;
 
@@ -645,7 +644,7 @@ document.addEventListener('focusin', e => {
 
         // Clear previous buttons
         rowAction.innerHTML = "";
-
+        
         // Create buttons
         if(defaults === "budgetItems"){
             const updateBtn = document.createElement('i');
@@ -684,7 +683,8 @@ document.addEventListener('focusin', e => {
             cancelRow(cancelBtn);      
         });
     });
-});
+}
+document.addEventListener('focusin', handleFocusIn);
 
 // New function to trigger focusout on the row
 function cancelRow(icon) {
@@ -761,6 +761,15 @@ document.addEventListener('DOMContentLoaded', () => {
             newRow.innerHTML = `
                <td></td>
                 <td colspan="3" class="customer-td editing-new-row">
+                <a class="autofill-value ms-auto" href="#" 
+                data-action="autofill-row" 
+                data-itemid ="${itemID}">
+                    <small>Autofill</small> 
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon align-middle">
+                        <path fill="#208EFF" d="M5 256c0 138.6 112.4 251 251 251s251-112.4 251-251S394.6 5 256 5 5 117.4 5 256zm249.2-130.7l113 113c4.9 4.9 7.3 11.3 7.3 17.7 0 6.4-2.4 12.8-7.3 17.7l-113 113c-9.8 9.8-25.6 9.8-35.4 0-9.8-9.8-9.8-25.6 0-35.4l95.4-95.4-95.4-95.4c-9.8-9.8-9.8-25.6 0-35.4 9.8-9.6 25.6-9.6 35.4.2z">
+                        </path>
+                    </svg>
+                </a>
                 <input type="text" class="amount-input-text" value="" 
                     data-budget-id="${budgetId}" 
                     data-year="${year}" 

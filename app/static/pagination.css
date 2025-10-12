@@ -1,0 +1,192 @@
+.pagination-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 30px 0;
+}
+
+.pagination-info {
+  position: absolute;
+  /* top: 10px; */
+  right: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.pagination-info span {
+  font-weight: bold;
+  color: #208EFF;
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.arrow {
+    background: #000000;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.arrow:hover {
+    background: #000000;
+    transform: translateY(-2px);
+}
+
+.arrow:active {
+    transform: translateY(1px);
+}
+
+.arrow:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.pindicator {
+    background-color: white;
+    display: flex;
+    margin: 0 15px;
+    width: 300px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    /* padding: 10px 0; */
+    scrollbar-width: thin;
+    scrollbar-color: #000000 #f1f1f1;
+}
+
+.pindicator::-webkit-scrollbar {
+    height: 8px;
+}
+
+.pindicator::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.pindicator::-webkit-scrollbar-thumb {
+    background: #000000;
+    border-radius: 10px;
+}
+
+.pindicator::-webkit-scrollbar-thumb:hover {
+    background: #000000;
+}
+
+.pindicator .bullet {
+    flex: 0 0 auto;
+    position: relative;
+    text-align: center;
+    transform-style: preserve-3d;
+    margin: 0 10px;
+    min-width: 60px;
+}
+
+.pindicator .bullet::before,
+.pindicator .bullet::after {
+    content: '';
+    display: block;
+    position: absolute;
+    height: 4px;
+    top: 18px;
+    transform: translate3d(0,0,-1px);
+}
+
+.pindicator .bullet::before {
+    background-color: #e0e0e0;
+    width: 100%;
+}
+
+.pindicator .bullet::after {
+    background-color: #000000;
+    transition: opacity .25s ease-out;
+    opacity: 0;
+    width: 100%;
+}
+
+.pindicator .bullet:first-child::before,
+.pindicator .bullet:first-child::after {
+    left: 50%;
+    width: 50%;
+}
+
+.pindicator .bullet:last-child::before,
+.pindicator .bullet:last-child::after {
+    width: 50%;
+}
+
+.pindicator .icon {
+    background-color: #e0e0e0;
+    border-radius: 50%;
+    color: #7f8c8d;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    width: 40px;
+    transition: all 0.3s ease;
+    z-index: 1;
+    position: relative;
+}
+
+.pindicator .text {
+    color: #95a5a6;
+    font-size: 0.7rem;
+    margin-top: 8px;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+}
+
+.pindicator .past .icon,
+.pindicator .current .icon {
+    background-color: #000000;
+    color: white;
+    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.pindicator .past::after,  
+.pindicator .current::after {
+    opacity: 1;
+}
+
+.pindicator .past .text,
+.pindicator .current .text,
+.pindicator .next .text {
+    color: #2c3e50;
+    font-weight: 600;
+}
+.scroll-hint {
+    text-align: center;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+}
+
+@media (max-width: 600px) {
+    .pagination-controls {
+        flex-direction: column;
+    }
+    
+    .pindicator {
+        margin: 15px 0;
+        width: 100%;
+    }
+
+}

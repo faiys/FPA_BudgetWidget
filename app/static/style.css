@@ -896,6 +896,41 @@ svg.icon {
 
 /* Autofill modal Popup */
 
+#autofillModal {
+  display: none;
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background-color: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#autofillModal.show {
+  display: flex;
+  opacity: 1;
+}
+
+#autofillModal .modal-content {
+  background: #fff;
+  border-radius: 8px;
+  padding: 2px;
+  min-width: 300px;
+  max-width: 58%;
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+
+
+
 .modal-content {
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -924,9 +959,6 @@ svg.icon {
   font-weight: 500;
   margin-bottom: 8px;
 }
-/* .amount-input {
-  max-width: 200px;
-} */
 .preview-table {
   width: 100%;
   border-collapse: collapse;
@@ -952,13 +984,6 @@ svg.icon {
   background-color: #dee2e6;
   margin: 20px 0;
 }
-/* .form-select {
-  max-width: 300px;
-}
-.form-control:focus, .form-select:focus {
-  border-color: #86b7fe;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-} */
 .modal-title {
   font-weight: 600;
   color: #212529;
@@ -1007,4 +1032,86 @@ svg.icon {
     .header-title {
         font-size: 1.5rem;
     }
+}
+
+
+/* Search */
+.search-link {
+  margin-left: auto;
+  color: #208EFF;
+  font-size: 18px;
+  padding: 6px;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.search-link:hover {
+  color: #0a6fd1;
+  transform: scale(1.1);
+}
+
+
+
+
+.search-container {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 300px;
+  height: 100vh;
+  background-color: #f8f9fa;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+  transition: right 1s ease;
+  z-index: 1000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.search-container.active {
+  right: 0;
+}
+
+.search-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.search-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.search-section {
+  margin-bottom: 20px;
+}
+
+.search-icon {
+  cursor: pointer;
+  margin-left: 10px;
+  color: #6c757d;
+}
+
+.search-icon:hover {
+  color: #495057;
+}
+
+/* Overlay for when search is open */
+.search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 999;
+  display: none;
+}
+
+.search-overlay.active {
+  display: block;
 }

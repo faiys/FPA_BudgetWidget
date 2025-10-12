@@ -6,6 +6,9 @@ const error_msg = document.getElementById("error-msdid");
 // Onload run fetch data
 document.addEventListener("DOMContentLoaded", () => {
  RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems")
+
+//  RenderBudgetTable("All_Budget_Managers_Js", "",AllFetchArr, defaults="budgetItems")
+//  fetch("All_Budget_Managers_Js", "", AllFetchArr)
 });
 
 // Fetch Records
@@ -28,7 +31,8 @@ async function fetch(ReportName, recordCursor, AllFetchArr){
             app_name: AppName,
             report_name: ReportName,
             criteria: criteriaVar,
-            record_cursor : recordCursor
+            record_cursor : recordCursor,
+            max_records : 1000
         };
         const fetchResp = await ZOHO.CREATOR.DATA.getRecords(config);
         if(fetchResp){
@@ -42,6 +46,11 @@ async function fetch(ReportName, recordCursor, AllFetchArr){
                 }
                 else{
                     let Arr_merged = AllFetchArr.flat();
+                    document.getElementById("record-countid").innerHTML = Arr_merged.length;
+                    // get only items arr
+                    // const budgetItems = Arr_merged.flatMap(obj => obj.Budget_Items);
+                    // console.log("budgetItems - ",Arr_merged);
+                    console.log(Arr_merged)
                     return Arr_merged;
                 }
             }
