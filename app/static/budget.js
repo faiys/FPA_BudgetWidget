@@ -77,7 +77,7 @@ addBtn.addEventListener('click', () => {
   errorDiv.style.display = 'none';
   budPop.style.display = "none";
   // Call add budget fucn
-  AddBudget('PnL_Raw_Report_JS', '', AllFetchArr=[])
+  showLoaderWhile(AddBudget('PnL_Raw_Report_JS', '', AllFetchArr=[]))
 });
 
 // Add Budget
@@ -257,7 +257,7 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
 
     // Add click listeners **after buttons are created**
   saveBtn.addEventListener('click', async function() {
-    
+
     if( type === "addBudget"){
       var postMap = {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : BudgetFormArr.period};
     }
@@ -267,7 +267,7 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
     else if(type === "Assumption_budget"){
       var postMap = {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : ""};
     }
-    LoadingScreen();
+    // LoadingScreen();
     const addbudgetResp = await POSTRecord("Budget_Manager", postMap);
     if(addbudgetResp.code == 3000)
     {
@@ -277,10 +277,10 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
         "Account_Name": item.Account_Name,
         "Class": item.Class
       }));
-      const buklAPIResp = await POSTBulkRecord("Budget_Manager_Items", updatedArr);
+      const buklAPIResp = await showLoaderWhile(POSTBulkRecord("Budget_Manager_Items", updatedArr));
       if(buklAPIResp.code == 3000){
         let AllFetchArr=[];
-        RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems");
+        showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems"));
         budgetSaveCancel.innerHTML = "";
       }
       else{
@@ -317,7 +317,7 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
 
   cancelBtn.addEventListener('click', function() {
     let AllFetchArr=[];
-    RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems");
+    showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems"));
     budgetSaveCancel.innerHTML = "";
     document.getElementById('budgetName').value = "";
     document.getElementById('budgetYear').value = "";
@@ -343,6 +343,13 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
       AssumPercnPop.style.display = "none";
     }
   });
+
+  // Clear Seach values
+  searchBudgetLookupInput.value = null;
+  searchYearLookupInput.value = null;
+  searchClassLookupInput.value = null;
+  searchAccountLookupInput.value = null;
+  searchCustomerLookupInput.value = null;
 
   function enableButtons() {
     [saveBtn, cancelBtn].forEach(btn => {
@@ -448,7 +455,7 @@ PreBudaddBtn.addEventListener('click', () => {
 
 // get Prefil budget
 async function PrefillGetBudget(budgetID, prefilname){
-  let PrefillBudgetResp = await fetch("Budget_Manager_Items_Js", "prefilbudget", [budgetID])
+  let PrefillBudgetResp = await showLoaderWhile(fetch("Budget_Manager_Items_Js", "prefilbudget", [budgetID]))
   if(PrefillBudgetResp){
     PrefillBudgetResp.forEach(item => {
       // If Budget_Manager exists, update its Name
@@ -458,6 +465,6 @@ async function PrefillGetBudget(budgetID, prefilname){
       }
       item["Budget_Manager.Name"] = prefilname;
     });
-    RenderBudgetTable("", "",PrefillBudgetResp, defaults="prefillBudget")
+    showLoaderWhile(RenderBudgetTable("", "",PrefillBudgetResp, defaults="prefillBudget"))
   }
 }

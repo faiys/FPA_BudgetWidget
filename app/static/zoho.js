@@ -5,7 +5,7 @@ const error_msg = document.getElementById("error-msdid");
 
 // Onload run fetch data
 document.addEventListener("DOMContentLoaded", () => {
- RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems")
+ showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems"))
 
 //  RenderBudgetTable("All_Budget_Managers_Js", "",AllFetchArr, defaults="budgetItems")
 //  fetch("All_Budget_Managers_Js", "", AllFetchArr)
@@ -46,13 +46,9 @@ async function fetch(ReportName, recordCursor, AllFetchArr){
                 }
                 else{
                     let Arr_merged = AllFetchArr.flat();
-                    document.getElementById("record-countid").innerHTML = Arr_merged.length;
                     // get only items arr for pagination
                     // const budgetItems = Arr_merged.flatMap(obj => obj.Budget_Items);
                     // console.log("budgetItems - ",Arr_merged);
-
-
-                    console.log(Arr_merged)
                     if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
                         // Store array for searching and resue lookup
                         const budgetItemsData_cached = localStorage.getItem('budgetItemsData');
@@ -111,7 +107,7 @@ function UpdateRecordByID(ReportName,RecID, customer_Arr){
         ZOHO.CREATOR.DATA.updateRecordById(UpdateRec_config).then(function (Update_response) {
             if (Update_response.code == 3000) {
                 let AllFetchArr = [];
-                RenderBudgetTable("Budget_Manager_Items_Js", "", AllFetchArr, defaults="budgetItems");
+                showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "", AllFetchArr, defaults="budgetItems"));
                 
                 // Submit Response
                 errorMsg("Item Updated.", "green")
@@ -140,7 +136,7 @@ function DeleteRecordByID(ReportName, RecID){
         ZOHO.CREATOR.DATA.deleteRecordById(Deleteconfig).then(function (Delete_response) {
         if (Delete_response.code == 3000) {
             let AllFetchArr = [];
-            RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems")
+            showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems"))
 
             // Submit Response
             setTimeout(() => {

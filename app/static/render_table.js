@@ -66,6 +66,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     );
 
     document.getElementById("total-budgetID").innerHTML = BudgetNameArr.length;
+    document.getElementById("record-countid").innerHTML = arrData.length;
     // getting this budget data pass to previous budget drobdown
     window.budgetlookup  = BudgetNameArr
 
@@ -845,7 +846,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(itemAddResp.code == 3000)
                     {
                         let AllFetchArr = [];
-                        RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr , defaults="budgetItems")
+                        showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr , defaults="budgetItems"))
                         errorMsg("Item Added.", "green")
                     }
                     else{

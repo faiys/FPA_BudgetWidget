@@ -14,6 +14,8 @@ const searchClassLookupInput = document.getElementById("searchClass-lookupInput"
 const searchClasslookupList = document.getElementById("searchClass-lookupList");
 const searchAccountLookupInput = document.getElementById("searchAccount-lookupInput");
 const searchAccountlookupList = document.getElementById("searchAccount-lookupList");
+const searchCustomerLookupInput = document.getElementById("searchCustomer-lookupInput");
+const searchCustomerlookupList = document.getElementById("searchCustomer-lookupList");
 
 const budgetItemsAllDataJsonConst = JSON.parse(localStorage.getItem('budgetItemsData'));
 const searchErrID = document.getElementById("error-searchId");
@@ -45,6 +47,11 @@ function renderSearchBudgetLookup(type, filter = "") {
       input: searchAccountLookupInput,
       list: searchAccountlookupList
     },
+    customer: {
+      key: "Customer",
+      input: searchCustomerLookupInput,
+      list: searchCustomerlookupList
+    },
   };
 
   // Get config for this type
@@ -64,7 +71,10 @@ function renderSearchBudgetLookup(type, filter = "") {
   // Filter values
   const filtered = uniqueValues.filter(val =>
     val?.toString().toLowerCase().includes(filter.toLowerCase())
-  );
+  ).sort((a, b) => {
+    // Convert to string for safe comparison
+    return a.toString().localeCompare(b.toString(), undefined, { numeric: true });
+  });
 
   // Render results
   filtered.forEach(val => {
@@ -96,9 +106,10 @@ searchClassLookupInput.addEventListener("input", e => renderSearchBudgetLookup("
 searchAccountLookupInput.addEventListener("focus", () => renderSearchBudgetLookup("account"));
 searchAccountLookupInput.addEventListener("input", e => renderSearchBudgetLookup("account", e.target.value));
 
-// Account
-// searchAccountLookupInput.addEventListener("focus", () => renderSearchBudgetLookup("account"));
-// searchAccountLookupInput.addEventListener("input", e => renderSearchBudgetLookup("account", e.target.value));
+// Customer
+searchCustomerLookupInput.addEventListener("focus", () => renderSearchBudgetLookup("customer"));
+searchCustomerLookupInput.addEventListener("input", e => renderSearchBudgetLookup("customer", e.target.value));
+
 
 // Hide on outside click
 document.addEventListener("click", e => {
@@ -109,62 +120,6 @@ document.addEventListener("click", e => {
   });
 });
 
-
-
-// function renderSearchBudgetLookup(filter = "") {
-//   let budgetItemsAllDataJson = budgetItemsAllDataJsonConst;
-//   searchBudgetlookupList.innerHTML = "";
-//   // Getting unique data
-//   let uniqueFiltered = Array.from(
-//     new Map(budgetItemsAllDataJson.map(item => [item.Budget_Manager.ID, item])).values()
-//   );
-//     // For user input search
-//   let serfiltered = uniqueFiltered.filter(item =>
-//     item.Budget_Manager.Name.toLowerCase().includes(filter.toLowerCase())
-//   );
-//   serfiltered.forEach(item => {
-//     // Budget Name
-//     const SearchNamediv = document.createElement("div");
-//     SearchNamediv.className = "lookup-item";
-//     SearchNamediv.textContent = item.Budget_Manager.Name;
-//     SearchNamediv.dataset.selectedId = item.Budget_Manager.ID;
-//     SearchNamediv.addEventListener("click", () => {
-//       searchBudgetLookupInput.value = item.Budget_Manager.Name;
-//       searchBudgetLookupInput.dataset.selectedId = item.Budget_Manager.ID;
-//       searchBudgetlookupList.style.display = "none";
-//     });
-//     searchBudgetlookupList.appendChild(SearchNamediv);
-
-//     // Year
-//     const Yeardiv = document.createElement("div");
-//     Yeardiv.className = "lookup-item";
-//     Yeardiv.textContent = item.Year_field;
-//     Yeardiv.addEventListener("click", () => {
-//       searchYearLookupInput.value = item.Year_field;
-//       searchYearlookupList.style.display = "none";
-//     });
-//     searchYearlookupList.appendChild(Yeardiv);
-//   });
-//   searchYearlookupList.style.display = uniqueFiltered.length ? "block" : "none";
-// }
-// // Show search  list on focus
-// searchBudgetLookupInput.addEventListener("focus", () => {
-//   renderSearchBudgetLookup();
-// });
-// // search as user types
-// searchBudgetLookupInput.addEventListener("input", e => {
-//   renderSearchBudgetLookup(e.target.value);
-// });
-// // Hide on outside click search lookup
-// document.addEventListener("click", e => {
-//   if (!searchBudgetLookupInput.contains(e.target) && !searchBudgetlookupList.contains(e.target)) {
-//     searchBudgetlookupList.style.display = "none";
-//   }
-// });
-
-
-
-
 // Apply search filters
 applySearchBtn.addEventListener('click', () => {
     // Collect selected search values
@@ -172,13 +127,14 @@ applySearchBtn.addEventListener('click', () => {
         budgetnameid: searchBudgetLookupInput.value.trim() || "",
         year: searchYearLookupInput.value.trim() || "",
         classname: searchClassLookupInput.value.trim() || "",
-        accountname: searchAccountLookupInput.value.trim() || ""
+        accountname: searchAccountLookupInput.value.trim() || "",
+        customer :searchCustomerLookupInput.value.trim() || ""
     };
 
     const budgetItemsAllDataJson = budgetItemsAllDataJsonConst;
 
     // Validation: check if all filters are empty && !Allsearch.accountname
-    if (!Allsearch.budgetnameid && !Allsearch.year && !Allsearch.classname && !Allsearch.accountname ) {
+    if (!Allsearch.budgetnameid && !Allsearch.year && !Allsearch.classname && !Allsearch.accountname && !Allsearch.customer ) {
         searchErrID.textContent = '⚠ Please fill in at least one field!';
         searchErrID.style.display = 'block';
         return;
@@ -197,50 +153,34 @@ applySearchBtn.addEventListener('click', () => {
             match = match && item.Year_field.toString() === Allsearch.year.toString();
 
         if (Allsearch.classname)
-            match = match && item.Class.Class.toString() === Allsearch.classname.toString();
+            match = match && item.Class.Class.toLowerCase() === Allsearch.classname.toLowerCase();
 
         if (Allsearch.accountname)
             match = match && item.Account_Name.Account_Name.toLowerCase().includes(Allsearch.accountname.toLowerCase());
+
+        if (Allsearch.customer)
+            match = match && item.Customer.toLowerCase().includes(Allsearch.customer.toLowerCase());
 
         return match;
     });
 
     // Render the filtered table
-    RenderBudgetTable("Budget_Manager_Items_Js", "", budgetsearcArr, "search_Defaults");
+    showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "", budgetsearcArr, "search_Defaults"));
 
     // Close Search container
     searchContainer.classList.remove('active');
     searchOverlay.classList.remove('active');
 });
 
-
-// applySearchBtn.addEventListener('click', () => {
-//     let Allsearch = {
-//         budgetnameid: searchBudgetLookupInput.dataset.selectedId
-//     };
-//     console.log("Allsearch - ",Allsearch)
-//     // console.log(Allsearch)
-//     let budgetItemsAllDataJson = budgetItemsAllDataJsonConst;
-
-//     if (!Allsearch.budgetnameid) {
-//         searchErrID.textContent = '⚠ Please fill in at least one field!';
-//         searchErrID.style.display = 'block';
-//         return;
-//     }
-
-//     let budgetsearcArr = budgetItemsAllDataJson.filter(item => item.Budget_Manager.ID === Allsearch.budgetnameid); 
-//     RenderBudgetTable("Budget_Manager_Items_Js", "", budgetsearcArr, "search_Defaults")
-
-//     // Close Search container
-//     searchContainer.classList.remove('active');
-//     searchOverlay.classList.remove('active');
-// });
-
 // Clear Search
 clearSearchBtn.addEventListener('click', () => {
   
   searchBudgetLookupInput.value = null;
-  RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr=[], defaults="budgetItems")
+  searchYearLookupInput.value = null;
+  searchClassLookupInput.value = null;
+  searchAccountLookupInput.value = null;
+  searchCustomerLookupInput.value = null;
+  showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr=[], defaults="budgetItems"))
   
   // Close Search container
   searchContainer.classList.remove('active');
@@ -248,21 +188,12 @@ clearSearchBtn.addEventListener('click', () => {
   
 });
 
-
-
-
-
-
-
-
-
-
 // Open search panel
 openSearchBtn.addEventListener('click', () => {
     searchErrID.style.display = "none";
     searchContainer.classList.add('active');
     searchOverlay.classList.add('active');
-   if(budPop.style.display === "flex")
+    if(budPop.style.display === "flex")
     {
       budPop.style.display = "none";
     }

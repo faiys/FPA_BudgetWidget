@@ -89,7 +89,7 @@ assumaddBtn.addEventListener('click', () => {
 });
 
 async function AssumGetBudget(budgetID, Assumname){
-  let Assum_BudgetResp = await fetch("Budget_Manager_Items_Js", "Assumption_budget", [budgetID])
+  let Assum_BudgetResp = await showLoaderWhile(fetch("Budget_Manager_Items_Js", "Assumption_budget", [budgetID]))
   if(Assum_BudgetResp){
     Assum_BudgetResp.forEach(item => {
       // If Budget_Manager exists, update its Name
@@ -99,7 +99,7 @@ async function AssumGetBudget(budgetID, Assumname){
       }
       item["Budget_Manager.Name"] = Assumname;
     });
-    RenderBudgetTable("", "",Assum_BudgetResp, defaults="Assumption_budget")
+    showLoaderWhile(RenderBudgetTable("", "",Assum_BudgetResp, defaults="Assumption_budget"))
   }
 }
 
@@ -290,5 +290,5 @@ assumPercentAddbtn.addEventListener('click', () => {
 
   
   AssumPercnPop.style.display = "none";
-  RenderBudgetTable("", "",transformedArr, defaults="Assumption_budget")
+  showLoaderWhile(RenderBudgetTable("", "",transformedArr, defaults="Assumption_budget"))
 });
