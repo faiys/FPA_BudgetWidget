@@ -47,10 +47,20 @@ async function fetch(ReportName, recordCursor, AllFetchArr){
                 else{
                     let Arr_merged = AllFetchArr.flat();
                     document.getElementById("record-countid").innerHTML = Arr_merged.length;
-                    // get only items arr
+                    // get only items arr for pagination
                     // const budgetItems = Arr_merged.flatMap(obj => obj.Budget_Items);
                     // console.log("budgetItems - ",Arr_merged);
+
+
                     console.log(Arr_merged)
+                    if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
+                        // Store array for searching and resue lookup
+                        const budgetItemsData_cached = localStorage.getItem('budgetItemsData');
+                        if (budgetItemsData_cached) {
+                            localStorage.removeItem('budgetItemsData');
+                        }
+                        localStorage.setItem('budgetItemsData', JSON.stringify(Arr_merged));
+                    }
                     return Arr_merged;
                 }
             }

@@ -388,23 +388,29 @@ const PreBuderrorDiv = document.getElementById('PreBudError');
 
 // Populate Budget list dynamically
 function renderLookupList(filter = "") {
+  let budgetItemsAllDataJson = JSON.parse(localStorage.getItem('budgetItemsData'));
   lookupList.innerHTML = "";
-  const filtered = window.budgetlookup.filter(item =>
-    item.name.toLowerCase().includes(filter.toLowerCase())
+  // For user input search
+  const filtered = budgetItemsAllDataJson.filter(item =>
+    item.Budget_Manager.Name.toLowerCase().includes(filter.toLowerCase())
   );
-  filtered.forEach(item => {
+  // Getting unique data
+  let LookuoFiltered = Array.from(
+    new Map(filtered.map(item => [item.Budget_Manager.ID, item])).values()
+  );
+  LookuoFiltered.forEach(item => {
     const div = document.createElement("div");
     div.className = "lookup-item";
-    div.textContent = item.name;
-    div.dataset.id = item.id;
+    div.textContent = item.Budget_Manager.Name;
+    div.dataset.id = item.Budget_Manager.ID;
     div.addEventListener("click", () => {
-      lookupInput.value = item.name;
-      lookupInput.dataset.selectedId = item.id;
+      lookupInput.value = item.Budget_Manager.Name;
+      lookupInput.dataset.selectedId = item.Budget_Manager.ID;
       lookupList.style.display = "none";
     });
     lookupList.appendChild(div);
   });
-  lookupList.style.display = filtered.length ? "block" : "none";
+  lookupList.style.display = LookuoFiltered.length ? "block" : "none";
 }
 
 // Show Budget list on focus

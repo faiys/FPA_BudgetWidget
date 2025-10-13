@@ -153,7 +153,8 @@
             </div>
 
             <!-- SEARCH -->
-            <a href="#" class="search-link">
+           
+            <a href="#" class="search-link" id="search-link">
                 <i class="fas fa-search" id="openSearch"></i>
             </a>
 
@@ -171,6 +172,7 @@
                 
                 <div class="search-section">
                     <div class="mb-3">
+                        <div class="error-msg" id="error-searchId" style="color: red;"></div>
                         <div class="form-group">
                             <label for="searchBudgetManager">Budget</label>
                             <div class="lookup-container">
@@ -178,10 +180,33 @@
                                 <div id="searchBudget-lookupList" class="lookup-list"></div>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="searchYear">Year</label>
+                            <div class="lookup-container">
+                                <input type="text" id="searchYear-lookupInput" placeholder="Search or select Year..." autocomplete="off">
+                                <div id="searchYear-lookupList" class="lookup-list"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="searchClass">Class</label>
+                            <div class="lookup-container">
+                                <input type="text" id="searchClass-lookupInput" placeholder="Search or select Class..." autocomplete="off">
+                                <div id="searchClass-lookupList" class="lookup-list"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="searchAccount">Account</label>
+                            <div class="lookup-container">
+                                <input type="text" id="searchAccount-lookupInput" placeholder="Search or select Account..." autocomplete="off">
+                                <div id="searchAccount-lookupList" class="lookup-list"></div>
+                            </div>
+                        </div>
+                        
                     </div>
-                    
-                    <button class="btn btn-primary w-100" id="applySearch">Apply Search</button>
-                    <button class="btn btn-outline-secondary w-100 mt-2" id="clearSearch">Clear Filters</button>
+                    <div style="text-align-last: center;margin-top: 2rem;">
+                        <button class="btn budgetbtn-save" id="applySearch">Apply Search</button>
+                        <button class="btn budgetbtn-cancel" id="clearSearch">Clear Filters</button>
+                    </div>
                 </div>
             </div>
         </div>

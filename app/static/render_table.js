@@ -29,9 +29,13 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     const budgetTable = document.querySelector(".budget-table");
     let arrData;
     if(defaults == "budgetItems" && ReportName){
+        document.getElementById("search-link").style.display = "inline-block";
         arrData = await fetch(ReportName, recordCursor, AllFetchArr);
     }
-    else if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget"){
+    else if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget" || defaults === "search_Defaults"){
+        if(defaults != "search_Defaults"){
+            document.getElementById("search-link").style.display = "none"; 
+        }
         arrData = AllFetchArr;
     }
     arrData.sort((a, b) => parseAddedTime(b.Added_Time) - parseAddedTime(a.Added_Time));

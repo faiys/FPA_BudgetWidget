@@ -31,23 +31,30 @@ const assumerrorDiv = document.getElementById('AssumError');
 
 // Populate Assum list dynamically
 function renderAssumLookupList(filter = "") {
+  let budgetItemsAllDataJson = JSON.parse(localStorage.getItem('budgetItemsData'));
   assumlookupList.innerHTML = "";
-  const filtered = window.budgetlookup.filter(item =>
-    item.name.toLowerCase().includes(filter.toLowerCase())
+
+  // For user input search
+  const assumfiltered = budgetItemsAllDataJson.filter(item =>
+    item.Budget_Manager.Name.toLowerCase().includes(filter.toLowerCase())
   );
-  filtered.forEach(item => {
+  // Getting unique data
+  let AssumLookupFiltered = Array.from(
+    new Map(assumfiltered.map(item => [item.Budget_Manager.ID, item])).values()
+  );
+  AssumLookupFiltered.forEach(item => {
     const div = document.createElement("div");
     div.className = "lookup-item";
-    div.textContent = item.name;
-    div.dataset.id = item.id;
+    div.textContent = item.Budget_Manager.Name;
+    div.dataset.id = item.Budget_Manager.ID;
     div.addEventListener("click", () => {
-      assumlookupInput.value = item.name;
-      assumlookupInput.dataset.selectedId = item.id;
+      assumlookupInput.value = item.Budget_Manager.Name;
+      assumlookupInput.dataset.selectedId = item.Budget_Manager.ID;
       assumlookupList.style.display = "none";
     });
     assumlookupList.appendChild(div);
   });
-  assumlookupList.style.display = filtered.length ? "block" : "none";
+  assumlookupList.style.display = AssumLookupFiltered.length ? "block" : "none";
 }
 // Show Assum list on focus
 assumlookupInput.addEventListener("focus", () => {
