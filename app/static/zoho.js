@@ -94,7 +94,8 @@ function UpdateRecordByID(ReportName,RecID, customer_Arr){
                     "September" : customer_Arr.September,
                     "October" : customer_Arr.October,
                     "November" : customer_Arr.November,
-                    "December" : customer_Arr.December
+                    "December" : customer_Arr.December,
+                    UpdateRecordsJs : true
                 }
             }
         }
@@ -106,6 +107,13 @@ function UpdateRecordByID(ReportName,RecID, customer_Arr){
             };
         ZOHO.CREATOR.DATA.updateRecordById(UpdateRec_config).then(function (Update_response) {
             if (Update_response.code == 3000) {
+
+                // // Call budget sycn to analytics
+                // if(ReportName === "Budget_Manager_Items_Js" && customer_Arr){
+                //      POSTRecord("Pnl_Schedule", []);
+                // }
+
+                
                 let AllFetchArr = [];
                 showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "", AllFetchArr, defaults="budgetItems"));
                 
@@ -177,7 +185,8 @@ async function POSTRecord(FormName, customer_Arr){
                     "September" : customer_Arr.September,
                     "October" : customer_Arr.October,
                     "November" : customer_Arr.November,
-                    "December" : customer_Arr.December
+                    "December" : customer_Arr.December,
+                     UpdateRecordsJs : true
                 }
             }
         }
@@ -188,10 +197,20 @@ async function POSTRecord(FormName, customer_Arr){
                     "Name" : customer_Arr.name,
                     "Year_field" : customer_Arr.year,
                     "Start_Month" :customer_Arr.month,
-                    "Period" : customer_Arr.period
+                    "Period" : customer_Arr.period,
+                    UpdateRecordsJs : true
                 }
             }
         }
+        // else if(FormName === "Pnl_Schedule"){
+        //     payload = {
+        //         "data":
+        //         {
+        //             "Name" : "JSBudgetUpdateAnalytics",
+        //             "Start_Time" :getCurrentDateTimeDDMMYYYY(0,10)
+        //         }
+        //     }
+        // }
         var postRec_config = {
             app_name: AppName,
             form_name: FormName,
@@ -199,6 +218,10 @@ async function POSTRecord(FormName, customer_Arr){
         };
         const post_response = await ZOHO.CREATOR.DATA.addRecords(postRec_config);
         if (post_response.code == 3000) {
+            // Call budget sycn to analytics
+            // if(FormName === "Budget_Manager_Items"){
+            //     POSTRecord("Pnl_Schedule", []);
+            // }
             return post_response
         }
         else{
@@ -229,6 +252,9 @@ async function POSTBulkRecord(FormName, inputArr){
         };
         const post_response = await ZOHO.CREATOR.PUBLISH.addRecords(postRec_config);
         if (post_response.code == 3000) {
+            // if(FormName === "Budget_Manager_Items"){
+            //     POSTRecord("Pnl_Schedule", []);
+            // }
             return post_response
         }
         else{
@@ -241,3 +267,23 @@ async function POSTBulkRecord(FormName, inputArr){
          return err
     }
 }
+
+//DateTime formate
+// function getCurrentDateTimeDDMMYYYY(addMins = 0, addSecs = 0) {
+//   const now = new Date();
+
+//   // Add minutes and seconds if passed
+//   now.setMinutes(now.getMinutes() + addMins);
+//   now.setSeconds(now.getSeconds() + addSecs);
+
+//   const day = String(now.getDate()).padStart(2, '0');
+//   let month = now.toLocaleString('default', { month: 'short' });
+//   if (month === "Sept") month = "Sep"; // normalize to 3-letter format
+//   const year = now.getFullYear();
+
+//   const hours = String(now.getHours()).padStart(2, '0');
+//   const mins = String(now.getMinutes()).padStart(2, '0');
+//   const secs = String(now.getSeconds()).padStart(2, '0');
+
+//   return `${day}-${month}-${year} ${hours}:${mins}:${secs}`;
+// }

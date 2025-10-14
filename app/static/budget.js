@@ -275,7 +275,8 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
         ...item,
         "Budget_Manager": addbudgetResp.data.ID,
         "Account_Name": item.Account_Name,
-        "Class": item.Class
+        "Class": item.Class,
+        "UpdateRecordsJs": true
       }));
       const buklAPIResp = await showLoaderWhile(POSTBulkRecord("Budget_Manager_Items", updatedArr));
       if(buklAPIResp.code == 3000){
