@@ -15,6 +15,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <!-- <script src="https://js.zohostatic.com/creator/widgets/version/1.0/widgetsdk-min.js"></script> -->
     <script src="https://js.zohostatic.com/creator/widgets/version/2.0/widgetsdk-min.js"></script>
+
+    <!-- PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
   </head>
   <body>
     <!-- Pages -->
@@ -29,121 +34,123 @@
         <!-- Show add and error message -->
         <div class="error-msg" id="error-msdid"></div>
         <!-- Click actions  -->
-        <div class="new-modal">
-            <!-- Budget Modal -->
-            <a href="#" class="modal-link"  id="openBudget" onclick="populateYears(2024, 4);">
-                <i class="fa fa-plus"></i> Add Budget
-            </a>
-            <div id="BudgetModal" class="budget-modal" style="display: none;">
-                <div class="budgetmodal-content">
-                    <h4>Budget</h4>
-                    <!-- Error message container -->
-                    <div id="budgetError" style="color:red; margin-bottom:10px; display:none;"></div>
-                    <div class="form-grid">
-                    <div class="form-group">
-                        <label for="budgetName">Name</label>
-                        <input type="text" id="budgetName" placeholder="Enter name">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="budgetYear">Year</label>
-                        <select id="budgetYear">
-                        <option>Select year</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="startMonth">Start Month</label>
-                        <select id="startMonth">
-                        <option>January</option>
-                        <option>February</option>
-                        <option>March</option>
-                        <option>April</option>
-                        <option>May</option>
-                        <option>June</option>
-                        <option>July</option>
-                        <option>August</option>
-                        <option>September</option>
-                        <option>October</option>
-                        <option>November</option>
-                        <option>December</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="period">Period</label>
-                        <select id="period">
-                        <option>Monthly</option>
-                        <option>3 Month</option>
-                        <option>6 Month</option>
-                        </select>
-                    </div>
-                    </div>
-
-                    <div class="budgetmodal-actions">
-                    <button class="btn primary">Add</button>
-                    <button class="btn cancel" id="closeBudget">Cancel</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pre-fill from Previous budget -->
-            <a href="#" class="PreBud-modal-link"  id="openPreBud">
-                <i class="fa fa-history"></i> Pre-fill from Previous budget
-            </a>
-            <div id="PreBudModal" class="PreBud-modal" style="display: none;">
-                <div class="PreBudmodal-content">
-                    <h4>Pre-fill from Previous budget</h4>
-                    <!-- Error message container -->
-                    <div id="PreBudError" style="color:red; margin-bottom:10px; display:none;"></div>
-                    <div class="">
+        <div class="new-modal" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <div class="modal-left-buttons" style="display: flex; gap: 1rem; align-items: center;">
+                <!-- Budget Modal -->
+                <a href="#" class="modal-link"  id="openBudget" onclick="populateYears(2024, 4);">
+                    <i class="fa fa-plus"></i> Add Budget
+                </a>
+                <div id="BudgetModal" class="budget-modal" style="display: none;">
+                    <div class="budgetmodal-content">
+                        <h4>Budget</h4>
+                        <!-- Error message container -->
+                        <div id="budgetError" style="color:red; margin-bottom:10px; display:none;"></div>
+                        <div class="form-grid">
                         <div class="form-group">
-                            <label for="PreBudName">Name</label>
-                            <input type="text" id="PreBudName" placeholder="Enter name">
+                            <label for="budgetName">Name</label>
+                            <input type="text" id="budgetName" placeholder="Enter name">
                         </div>
-                        <div class="form-group">
-                            <label for="lookupInput" style="margin-top: 4px;">Select Budget</label>
-                            <div class="lookup-container">
-                                <input type="text" id="lookupInput" placeholder="Search or select budget..." autocomplete="off">
-                                <div id="lookupList" class="lookup-list"></div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="PreBudmodal-actions">
+                        <div class="form-group">
+                            <label for="budgetYear">Year</label>
+                            <select id="budgetYear">
+                            <option>Select year</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="startMonth">Start Month</label>
+                            <select id="startMonth">
+                            <option>January</option>
+                            <option>February</option>
+                            <option>March</option>
+                            <option>April</option>
+                            <option>May</option>
+                            <option>June</option>
+                            <option>July</option>
+                            <option>August</option>
+                            <option>September</option>
+                            <option>October</option>
+                            <option>November</option>
+                            <option>December</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="period">Period</label>
+                            <select id="period">
+                            <option>Monthly</option>
+                            <option>3 Month</option>
+                            <option>6 Month</option>
+                            </select>
+                        </div>
+                        </div>
+
+                        <div class="budgetmodal-actions">
                         <button class="btn primary">Add</button>
-                        <button class="btn cancel" id="closePreBud">Cancel</button>
+                        <button class="btn cancel" id="closeBudget">Cancel</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Add Assumption -->
-            <a href="#" class="Assum-modal-link" id="openAssum">
-                <i class="fa fa-lightbulb"></i> Add Assumption
-             </a>
-             <div id="AssumModal" class="Assum-modal" style="display: none;">
-                <div class="Assummodal-content">
-                    <h4>Assumption</h4>
-                    <!-- Error message container -->
-                    <div id="AssumError" style="color:red; margin-bottom:10px; display:none;"></div>
-                    <div class="">
-                        <div class="form-group">
-                            <label for="AssumName">Name</label>
-                            <input type="text" id="AssumName" placeholder="Enter name">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="assum-lookupInput">Select Budget</label>
-                            <div class="lookup-container">
-                                <input type="text" id="assum-lookupInput" placeholder="Search or select budget..." autocomplete="off">
-                                <div id="assum-lookupList" class="lookup-list"></div>
+                <!-- Pre-fill from Previous budget -->
+                <a href="#" class="PreBud-modal-link"  id="openPreBud">
+                    <i class="fa fa-history"></i> Pre-fill from Previous budget
+                </a>
+                <div id="PreBudModal" class="PreBud-modal" style="display: none;">
+                    <div class="PreBudmodal-content">
+                        <h4>Pre-fill from Previous budget</h4>
+                        <!-- Error message container -->
+                        <div id="PreBudError" style="color:red; margin-bottom:10px; display:none;"></div>
+                        <div class="">
+                            <div class="form-group">
+                                <label for="PreBudName">Name</label>
+                                <input type="text" id="PreBudName" placeholder="Enter name">
+                            </div>
+                            <div class="form-group">
+                                <label for="lookupInput" style="margin-top: 4px;">Select Budget</label>
+                                <div class="lookup-container">
+                                    <input type="text" id="lookupInput" placeholder="Search or select budget..." autocomplete="off">
+                                    <div id="lookupList" class="lookup-list"></div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="Assummodal-actions">
-                    <button class="btn primary">Add</button>
-                    <button class="btn cancel" id="closeAssum">Cancel</button>
+                        <div class="PreBudmodal-actions">
+                            <button class="btn primary">Add</button>
+                            <button class="btn cancel" id="closePreBud">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Assumption -->
+                <a href="#" class="Assum-modal-link" id="openAssum">
+                    <i class="fa fa-lightbulb"></i> Add Assumption
+                </a>
+                <div id="AssumModal" class="Assum-modal" style="display: none;">
+                    <div class="Assummodal-content">
+                        <h4>Assumption</h4>
+                        <!-- Error message container -->
+                        <div id="AssumError" style="color:red; margin-bottom:10px; display:none;"></div>
+                        <div class="">
+                            <div class="form-group">
+                                <label for="AssumName">Name</label>
+                                <input type="text" id="AssumName" placeholder="Enter name">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="assum-lookupInput">Select Budget</label>
+                                <div class="lookup-container">
+                                    <input type="text" id="assum-lookupInput" placeholder="Search or select budget..." autocomplete="off">
+                                    <div id="assum-lookupList" class="lookup-list"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="Assummodal-actions">
+                        <button class="btn primary">Add</button>
+                        <button class="btn cancel" id="closeAssum">Cancel</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -152,66 +159,78 @@
                 <!-- While add button show Save change and remove change button-->
             </div>
 
-            <!-- SEARCH -->
-           
-            <a href="#" class="search-link" id="search-link">
-                <i class="fas fa-search" id="openSearch"></i>
-            </a>
-
-            <!-- Search Overlay -->
-            <div class="search-overlay" id="searchOverlay"></div>
-            
-            <!-- Search Container -->
-            <div class="search-container" id="searchContainer">
-                <div class="search-header">
-                    <h5>Search</h5>
-                    <button class="search-close" id="closeSearch">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <div class="search-section">
-                    <div class="mb-3">
-                        <div class="error-msg" id="error-searchId" style="color: red;"></div>
-                        <div class="form-group">
-                            <label for="searchBudgetManager">Budget</label>
-                            <div class="lookup-container">
-                                <input type="text" id="searchBudget-lookupInput" placeholder="Search or select budget..." autocomplete="off">
-                                <div id="searchBudget-lookupList" class="lookup-list"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="searchYear">Year</label>
-                            <div class="lookup-container">
-                                <input type="text" id="searchYear-lookupInput" placeholder="Search or select Year..." autocomplete="off">
-                                <div id="searchYear-lookupList" class="lookup-list"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="searchClass">Class</label>
-                            <div class="lookup-container">
-                                <input type="text" id="searchClass-lookupInput" placeholder="Search or select Class..." autocomplete="off">
-                                <div id="searchClass-lookupList" class="lookup-list"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="searchAccount">Account</label>
-                            <div class="lookup-container">
-                                <input type="text" id="searchAccount-lookupInput" placeholder="Search or select Account..." autocomplete="off">
-                                <div id="searchAccount-lookupList" class="lookup-list"></div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="searchCustomer">Customer</label>
-                            <div class="lookup-container">
-                                <input type="text" id="searchCustomer-lookupInput" placeholder="Search or select Account..." autocomplete="off">
-                                <div id="searchCustomer-lookupList" class="lookup-list"></div>
-                            </div>
-                        </div>
+             <div class="modal-right-buttons" style="display: flex; gap: 1rem; align-items: center;">
+                <!-- Export -->
+                <div class="dropdown">
+                    <span class="download-link" style="text-decoration: none;" onclick="toggleDropdownActual(this)">
+                    <i class="fa fa-download"></i> Download
+                    </span>
+                    <div class="dropdown-content">
+                    <a href="#" id="ExpotCsvId"><i class="fa-solid fa-file-csv" style="color:green"></i> CSV</a>
+                    <a href="#" onclick="downloadExport('pdf')"><i class="fa-solid fa-file-pdf" style="color:red"></i> PDF</a>
                     </div>
-                    <div style="text-align-last: center;margin-top: 2rem;">
-                        <button class="btn budgetbtn-save" id="applySearch">Apply Search</button>
-                        <button class="btn budgetbtn-cancel" id="clearSearch">Clear Filters</button>
+                </div>
+
+                <!-- SEARCH -->
+                <a href="#" class="search-link" id="search-link">
+                    <i class="fas fa-search" id="openSearch"></i>
+                </a>
+
+                <!-- Search Overlay -->
+                <div class="search-overlay" id="searchOverlay"></div>
+                
+                <!-- Search Container -->
+                <div class="search-container" id="searchContainer">
+                    <div class="search-header">
+                        <h5>Search</h5>
+                        <button class="search-close" id="closeSearch">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="search-section">
+                        <div class="mb-3">
+                            <div class="error-msg" id="error-searchId" style="color: red;"></div>
+                            <div class="form-group">
+                                <label for="searchBudgetManager">Budget</label>
+                                <div class="lookup-container">
+                                    <input type="text" id="searchBudget-lookupInput" placeholder="Search or select budget..." autocomplete="off">
+                                    <div id="searchBudget-lookupList" class="lookup-list"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="searchYear">Year</label>
+                                <div class="lookup-container">
+                                    <input type="text" id="searchYear-lookupInput" placeholder="Search or select Year..." autocomplete="off">
+                                    <div id="searchYear-lookupList" class="lookup-list"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="searchClass">Class</label>
+                                <div class="lookup-container">
+                                    <input type="text" id="searchClass-lookupInput" placeholder="Search or select Class..." autocomplete="off">
+                                    <div id="searchClass-lookupList" class="lookup-list"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="searchAccount">Account</label>
+                                <div class="lookup-container">
+                                    <input type="text" id="searchAccount-lookupInput" placeholder="Search or select Account..." autocomplete="off">
+                                    <div id="searchAccount-lookupList" class="lookup-list"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="searchCustomer">Customer</label>
+                                <div class="lookup-container">
+                                    <input type="text" id="searchCustomer-lookupInput" placeholder="Search or select Account..." autocomplete="off">
+                                    <div id="searchCustomer-lookupList" class="lookup-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align-last: center;margin-top: 2rem;">
+                            <button class="btn budgetbtn-save" id="applySearch">Apply Search</button>
+                            <button class="btn budgetbtn-cancel" id="clearSearch">Clear Filters</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -220,7 +239,7 @@
         <!-- Data Table -->
         <div class="data-table-container">
             <div class="table-responsive">
-                <table class="table table-hover budget-table ">
+                <table class="table table-hover budget-table" id="budgetTablId">
                     <thead>
                         <tr>
                         

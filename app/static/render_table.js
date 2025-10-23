@@ -432,7 +432,6 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                     window.tdCount = customerRow.querySelectorAll("td").length;
                     budgetTableBody.appendChild(customerRow);
 
-
                     // Attach change event for this row for final array
                     if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget"){
                         attachInputListeners(customerRow); 
@@ -473,6 +472,12 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     collapseIcon.style.display = "inline";
     });
     
+    // Export
+    document.getElementById('ExpotCsvId').addEventListener('click', function(){
+        console.log(customerArr)
+        downloadExport('csv', customerArr)        
+    })
+
 }
 
 function attachInputListenersCust(row) {
@@ -891,3 +896,102 @@ function MaintableCollapse(action = "collapse"){
         allRows.forEach(row => row.classList.remove("hidden-budget"));
     }
 }
+
+// Download
+function toggleDropdownActual(element) {
+    const container = element.parentElement;
+    container.classList.toggle('show');
+}
+window.onclick = function(event) {
+  if (!event.target.matches('.download-link')) {
+    document.querySelector('.dropdown').classList.remove('show');
+  }
+}
+function downloadExport(type, inputArr) {
+  if(type === "csv"){
+    downloadJSONAsCSV(inputArr, 'Budget.csv');
+  }
+  else if(type === "pdf"){
+    // downloadPDF()
+  }
+  document.querySelector('.dropdown').classList.remove('show');
+}  
+
+// Export csv
+function downloadJSONAsCSV(data, filename) {
+     // Sort data
+    data.sort((a, b) => {
+        // Year ascending
+        if (a.Year_field !== b.Year_field) return a.Year_field - b.Year_field;
+        // Budget name ascending
+        if (a.budgetName !== b.budgetName) return a.budgetName.localeCompare(b.budgetName);
+        // Category order: Revenue first, then Expense
+        const categoryOrder = { "REVENUE": 1, "EXPENSE": 2 };
+        if (a.class !== b.class) return (categoryOrder[a.class] || 99) - (categoryOrder[b.class] || 99);
+        // Account name ascending
+        if (a.accountName !== b.accountName) return a.accountName.localeCompare(b.accountName);
+        // Customer ascending
+        return a.customer.localeCompare(b.customer);
+    });
+
+    const headers = ["Year", "Budget Name", "Category", "Account Name", "Customer", ...months];
+    const csvRows = [];
+    csvRows.push(headers.join(','));
+
+    data.forEach(row => {
+        const monthValues = months.map(m => row[m] !== undefined ? row[m] : 0);
+        const rowData = [
+            row.Year_field,
+            row.budgetName,
+            row.class,
+            row.accountName,
+            row.customer,
+            ...monthValues
+        ];
+        csvRows.push(rowData.join(','));
+    });
+
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// async function downloadPDF() {
+//     const element = document.getElementById("budgetTablId");
+//     const { jsPDF } = window.jspdf;
+
+//     // Capture table as canvas
+//     const canvas = await html2canvas(element, { scale: 2 , logging: false});
+//     const imgData = canvas.toDataURL("image/png");
+
+//     const pdf = new jsPDF({
+//         orientation: 'landscape',
+//         unit: 'pt',
+//         format: 'a4'
+//     });
+
+//     const pageWidth = pdf.internal.pageSize.getWidth();
+//     const pageHeight = pdf.internal.pageSize.getHeight();
+
+//     const imgWidth = canvas.width;
+//     const imgHeight = canvas.height;
+//     const scale = pageWidth / imgWidth;
+//     const scaledHeight = imgHeight * scale;
+
+//     let position = 0;
+
+//     // Split image into multiple pages if height > pageHeight
+//     while (position < scaledHeight) {
+//         pdf.addImage(imgData, 'PNG', 0, -position, pageWidth, scaledHeight);
+//         position += pageHeight;
+//         if (position < scaledHeight) pdf.addPage();
+//     }
+
+//     pdf.save("Budget.pdf");
+// }

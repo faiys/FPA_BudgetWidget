@@ -103,7 +103,7 @@ body {
   z-index: 9999;
   justify-content: center;
   align-items: center;
-  margin-top: 28px;
+  margin-top: 20.5rem;
   margin-left: -2px;
 }
 
@@ -146,7 +146,7 @@ body {
   z-index: 9999;
   justify-content: center;
   align-items: center;
-  margin-top: 28px;
+  margin-top: 19rem;
   margin-left: 7rem;
 }
 
@@ -237,7 +237,7 @@ body {
   z-index: 9999;
   justify-content: center;
   align-items: center;
-  margin-top: 28px;
+  margin-top: 18.5rem;
   margin-left: 21rem;
 }
 
@@ -497,7 +497,7 @@ body {
   display: flex;
   gap: 10px;
   justify-content: center; 
-  margin-left: 7rem;
+  margin-left: -13rem;
 }
 
 .budgetsave-cancel button {
@@ -1114,4 +1114,52 @@ svg.icon {
 
 .search-overlay.active {
   display: block;
+}
+
+
+
+/* Export */
+/* Dropdown container */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 100px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+/* Dropdown items */
+.dropdown-content a {
+  color: black;
+  padding: 8px 12px;
+  text-decoration: none;
+  display: block;
+}
+
+/* Hover effect for items */
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+}
+
+/* Show dropdown */
+.dropdown.show .dropdown-content {
+  display: block;
+}
+.dropdownab.show .dropdown-content {
+  display: block;
+}
+
+
+/* Link styling */
+.download-link {
+  cursor: pointer;
+  color: blue;
+  text-decoration: underline;
 }
