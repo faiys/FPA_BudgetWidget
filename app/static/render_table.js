@@ -34,8 +34,10 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     }
     else if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget" || defaults === "search_Defaults"){
         if(defaults != "search_Defaults"){
-            document.getElementById("search-link").style.display = "none"; 
+            document.getElementById("search-link").style.display = "none";  
+            document.getElementById("ExpotpdfId").style.display = "none";
         }
+        document.getElementById("ExpotpdfId").style.display = "flex";
         arrData = AllFetchArr;
     }
     arrData.sort((a, b) => parseAddedTime(b.Added_Time) - parseAddedTime(a.Added_Time));
@@ -173,6 +175,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     }, {})
     );
     customerArr.sort((a, b) => a.customer.localeCompare(b.customer));
+    window.customerArr = customerArr;
     // Header 
     const actualMonthsInData = new Set();
     BudgetNameArr.forEach(budgetN => {
@@ -471,13 +474,6 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     expandIcon.style.display = "none";
     collapseIcon.style.display = "inline";
     });
-    
-    // Export
-    document.getElementById('ExpotCsvId').addEventListener('click', function(){
-        console.log(customerArr)
-        downloadExport('csv', customerArr)        
-    })
-
 }
 
 function attachInputListenersCust(row) {
@@ -907,30 +903,27 @@ window.onclick = function(event) {
     document.querySelector('.dropdown').classList.remove('show');
   }
 }
-function downloadExport(type, inputArr) {
-  if(type === "csv"){
-    downloadJSONAsCSV(inputArr, 'Budget.csv');
-  }
-  else if(type === "pdf"){
-    // downloadPDF()
-  }
-  document.querySelector('.dropdown').classList.remove('show');
-}  
+
+// CSV Export
+document.getElementById('ExpotCsvId').addEventListener('click', function(){ 
+    downloadJSONAsCSV(customerArr, 'Budget.csv');  
+    document.querySelector('.dropdown').classList.remove('show');    
+})
+
+// While search PDF Export
+document.getElementById('ExpotpdfId').addEventListener('click', function(){ 
+    downloadPDF()     
+    document.querySelector('.dropdown').classList.remove('show');
+})
 
 // Export csv
 function downloadJSONAsCSV(data, filename) {
-     // Sort data
     data.sort((a, b) => {
-        // Year ascending
         if (a.Year_field !== b.Year_field) return a.Year_field - b.Year_field;
-        // Budget name ascending
         if (a.budgetName !== b.budgetName) return a.budgetName.localeCompare(b.budgetName);
-        // Category order: Revenue first, then Expense
         const categoryOrder = { "REVENUE": 1, "EXPENSE": 2 };
         if (a.class !== b.class) return (categoryOrder[a.class] || 99) - (categoryOrder[b.class] || 99);
-        // Account name ascending
         if (a.accountName !== b.accountName) return a.accountName.localeCompare(b.accountName);
-        // Customer ascending
         return a.customer.localeCompare(b.customer);
     });
 
@@ -962,36 +955,41 @@ function downloadJSONAsCSV(data, filename) {
     URL.revokeObjectURL(url);
 }
 
-// async function downloadPDF() {
-//     const element = document.getElementById("budgetTablId");
-//     const { jsPDF } = window.jspdf;
+async function downloadPDF() {
+    try{
+    const element = document.getElementById("budgetTablId");
+    const { jsPDF } = window.jspdf;
 
-//     // Capture table as canvas
-//     const canvas = await html2canvas(element, { scale: 2 , logging: false});
-//     const imgData = canvas.toDataURL("image/png");
+    // Capture table as canvas
+    const canvas = await html2canvas(element, { scale: 2 , logging: false});
+    const imgData = canvas.toDataURL("image/png");
 
-//     const pdf = new jsPDF({
-//         orientation: 'landscape',
-//         unit: 'pt',
-//         format: 'a4'
-//     });
+    const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'pt',
+        format: 'a4'
+    });
 
-//     const pageWidth = pdf.internal.pageSize.getWidth();
-//     const pageHeight = pdf.internal.pageSize.getHeight();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
 
-//     const imgWidth = canvas.width;
-//     const imgHeight = canvas.height;
-//     const scale = pageWidth / imgWidth;
-//     const scaledHeight = imgHeight * scale;
+    const imgWidth = canvas.width;
+    const imgHeight = canvas.height;
+    const scale = pageWidth / imgWidth;
+    const scaledHeight = imgHeight * scale;
 
-//     let position = 0;
+    let position = 0;
 
-//     // Split image into multiple pages if height > pageHeight
-//     while (position < scaledHeight) {
-//         pdf.addImage(imgData, 'PNG', 0, -position, pageWidth, scaledHeight);
-//         position += pageHeight;
-//         if (position < scaledHeight) pdf.addPage();
-//     }
+    // Split image into multiple pages if height > pageHeight
+    while (position < scaledHeight) {
+        pdf.addImage(imgData, 'PNG', 0, -position, pageWidth, scaledHeight);
+        position += pageHeight;
+        if (position < scaledHeight) pdf.addPage();
+    }
 
-//     pdf.save("Budget.pdf");
-// }
+    pdf.save("Budget.pdf");
+    }
+    catch(err){
+        alert("PDF generation failed due to large data size")
+    }
+}
