@@ -77,7 +77,7 @@ addBtn.addEventListener('click', () => {
   errorDiv.style.display = 'none';
   budPop.style.display = "none";
   // Call add budget fucn
-  showLoaderWhile(AddBudget('PnL_Raw_Report_JS', '', AllFetchArr=[]))
+  showLoaderWhile(AddBudget('Pnl_With_Margin_Raw_JS', '', AllFetchArr=[]))
 });
 
 // Add Budget
@@ -114,7 +114,7 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
   //Sum Amounts grouped by Account_Name and Transaction_Details
   let sumByCriteria = {};
   centerMonthArr.forEach(item => {
-    const key = `${item.Account_Name}||${item.Transaction_Details}`; // combine criteria
+    const key = `${item.Account_Name}||${item.Customer}`; // combine criteria
     const amount = parseFloat(item.Amount) || 0;
     
     if (!sumByCriteria[key]) sumByCriteria[key] = 0;
@@ -122,10 +122,10 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
   });
   // Convert to an array if needed
   let summedArr = Object.entries(sumByCriteria).map(([key, total]) => {
-    const [Account_Name, Transaction_Details] = key.split("||");
+    const [Account_Name, Customer] = key.split("||");
     return {
       Account_Name,
-      Transaction_Details,
+      Customer,
       Total_Amount: total
     };
   });
@@ -149,8 +149,8 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
       let seenDetails = new Set();
 
       matches.forEach(pnl => {
-        if (!seenDetails.has(pnl.Transaction_Details)) {
-          seenDetails.add(pnl.Transaction_Details);
+        if (!seenDetails.has(pnl.Customer)) {
+          seenDetails.add(pnl.Customer);
 
           let obj ={
             Account_Name: {
@@ -165,12 +165,12 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
               ID: "4837701000000211575",
               Name: enter_name
             },
-            Customer: pnl.Transaction_Details,
+            Customer: pnl.Customer,
             Year_field: enter_year
           };
           // Find the 2nd month object from Last3Match that matches both Account_Name and Transaction_Details
           const secondMonthObj = summedArr.find((m) => 
-            m.Transaction_Details === pnl.Transaction_Details && m.Account_Name == pnl.Account_Name
+            m.Customer === pnl.Customer && m.Account_Name == pnl.Account_Name
           );
           const amountToAssign = secondMonthObj ? parseFloat(secondMonthObj.Total_Amount) : 0;
 
@@ -210,7 +210,7 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
           });
           // Filter all matching records
           const matchingArr = Last3Match.filter(lm =>
-            lm.Transaction_Details === pnl.Transaction_Details &&
+            lm.Customer === pnl.Customer &&
             lm.Account_Name === pnl.Account_Name
           );
           const monthSums = {};

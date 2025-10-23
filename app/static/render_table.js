@@ -30,11 +30,14 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     let arrData;
     if(defaults == "budgetItems" && ReportName){
         document.getElementById("search-link").style.display = "inline-block";
+        document.getElementById("exportID").style.display = "inline-block";
+        document.getElementById("ExpotpdfId").style.display = "none";
         arrData = await fetch(ReportName, recordCursor, AllFetchArr);
     }
     else if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget" || defaults === "search_Defaults"){
         if(defaults != "search_Defaults"){
             document.getElementById("search-link").style.display = "none";  
+            document.getElementById("exportID").style.display = "none";
             document.getElementById("ExpotpdfId").style.display = "none";
         }
         document.getElementById("ExpotpdfId").style.display = "flex";
