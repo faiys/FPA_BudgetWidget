@@ -224,7 +224,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                 <td colspan="4">
                     <div class="budget-name" data-budget-id="${budgetN.id}" data-target="budget-details">
                         <div class="budget-left">
-                            <i class="fas fa-chevron-down"></i> ${budgetN.name}
+                            <i class="fas fa-chevron-down"></i> ${budgetN.year} - ${budgetN.name}
                         </div>
                         <div class="budget-delete">
                         ${(defaults === "budgetItems") 

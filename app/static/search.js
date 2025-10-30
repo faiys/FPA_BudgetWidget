@@ -17,11 +17,11 @@ const searchAccountlookupList = document.getElementById("searchAccount-lookupLis
 const searchCustomerLookupInput = document.getElementById("searchCustomer-lookupInput");
 const searchCustomerlookupList = document.getElementById("searchCustomer-lookupList");
 
-const budgetItemsAllDataJsonConst = JSON.parse(localStorage.getItem('budgetItemsData'));
 const searchErrID = document.getElementById("error-searchId");
 
 // Populate searchBudget list dynamically
 function renderSearchBudgetLookup(type, filter = "") {
+  const budgetItemsAllDataJsonConst = JSON.parse(localStorage.getItem('budgetItemsData'));
   let data = budgetItemsAllDataJsonConst;
   let listElement, inputElement, fieldKey, uniqueValues;
 
@@ -130,8 +130,8 @@ applySearchBtn.addEventListener('click', () => {
         accountname: searchAccountLookupInput.value.trim() || "",
         customer :searchCustomerLookupInput.value.trim() || ""
     };
-
-    const budgetItemsAllDataJson = budgetItemsAllDataJsonConst;
+    const budgetItemsAllDataJsonConsts = JSON.parse(localStorage.getItem('budgetItemsData'));
+    const budgetItemsAllDataJson = budgetItemsAllDataJsonConsts;
 
     // Validation: check if all filters are empty && !Allsearch.accountname
     if (!Allsearch.budgetnameid && !Allsearch.year && !Allsearch.classname && !Allsearch.accountname && !Allsearch.customer ) {
