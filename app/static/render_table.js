@@ -26,7 +26,6 @@ function parseAddedTime(s) {
 // Render budget Table
 async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults){
     budgetTableBody.innerHTML = '';
-    const budgetTable = document.querySelector(".budget-table");
     let arrData;
     if(defaults == "budgetItems" && ReportName){
         document.getElementById("search-link").style.display = "inline-block";
@@ -214,239 +213,244 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
     thead.innerHTML = '';
     thead.appendChild(headerRow);
 
-    // Render budget name with distinct
-    BudgetNameArr.forEach(budgetN => {
-        
-        // Budget name row
-        const budgetRow = document.createElement('tr');
-        budgetRow.classList.add('budget-row');
-        budgetRow.innerHTML = `
-            <td colspan="4">
-                <div class="budget-name" data-budget-id="${budgetN.id}" data-target="budget-details">
-                    <div class="budget-left">
-                        <i class="fas fa-chevron-down"></i> ${budgetN.name}
+    if(arrData.length > 0){
+        // Render budget name with distinct
+        BudgetNameArr.forEach(budgetN => {
+            
+            // Budget name row
+            const budgetRow = document.createElement('tr');
+            budgetRow.classList.add('budget-row');
+            budgetRow.innerHTML = `
+                <td colspan="4">
+                    <div class="budget-name" data-budget-id="${budgetN.id}" data-target="budget-details">
+                        <div class="budget-left">
+                            <i class="fas fa-chevron-down"></i> ${budgetN.name}
+                        </div>
+                        <div class="budget-delete">
+                        ${(defaults === "budgetItems") 
+                            ? `<i class="bi bi-trash2 ms-auto" title="Remove" onclick="event.stopPropagation(); DeleteRecordByID('All_Budget_Managers', '${budgetN.id}')"></i>` 
+                            : ""
+                        }
+                        </div>
                     </div>
-                    <div class="budget-delete">
-                    ${(defaults === "budgetItems") 
-                        ? `<i class="bi bi-trash2 ms-auto" title="Remove" onclick="event.stopPropagation(); DeleteRecordByID('All_Budget_Managers', '${budgetN.id}')"></i>` 
-                        : ""
-                    }
-                    </div>
-                </div>
-                
-            </td>
-        `;
-        if(defaults === "addBudget" || defaults === "prefillBudget"){
-            Object.keys(budgetN).forEach(key => {
-                if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
-                    budgetRow.innerHTML += `<td class="tdfont">${formatIndia(budgetN[key])}</td>`;
-                }
-            });
-        }
-        months.forEach(month => {
-             budgetRow.innerHTML += `<td class="tdfont">${budgetN[month] != "0.00" ? formatIndia(budgetN[month]) : ""}</td>`;
-        });
-        budgetRow.innerHTML += `<td class="tdfont"></td>`;
-        budgetTableBody.appendChild(budgetRow);
-
-        // Add click event to toggle budget details
-        const budgetNameDiv = budgetRow.querySelector('.budget-name');
-        budgetNameDiv.addEventListener('click', function() {
-            toggleBudgetDetails(budgetN.id);
-        });
-
-        // Render class name
-        // Filter based on the budget ID in this class arr
-        let Class_filtered = classArr.filter(item => item.budgetId === budgetN.id);
-        Class_filtered.forEach(cls_element => {
-            const categoryRow = document.createElement('tr');
-            categoryRow.classList.add('category-row');
-            categoryRow.setAttribute('data-budget-id', cls_element.budgetId);
-            categoryRow.setAttribute('data-year', budgetN.year);
-            categoryRow.setAttribute('data-category', cls_element.class);
-
-            const categoryIcon = cls_element.class === 'REVENUE' ? 
-                '<i class="fas fa-arrow-up" style="color: var(--success-green);"></i>' : 
-                '<i class="fas fa-arrow-down" style="color: var(--danger-red);"></i>';
-            let cat_color = cls_element.class === 'REVENUE'? "style='color: var(--success-green);background-color: #e4e4e4;'" : "style='color: var(--danger-red);background-color: #e4e4e4;'";
-
-            categoryRow.innerHTML = `
-                <td style="background-color: #e4e4e4;"></td>
-                <td colspan="3" class="${cls_element.class}-category" style="background-color: #e4e4e4;">
-                    ${categoryIcon} ${cls_element.class}
-                </td>       
+                    
+                </td>
             `;
             if(defaults === "addBudget" || defaults === "prefillBudget"){
-                Object.keys(cls_element).forEach(key => {
+                Object.keys(budgetN).forEach(key => {
                     if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
-                        categoryRow.innerHTML += `<td class="amount-cell" ${cat_color}>${formatIndia(cls_element[key])}</td>`;
+                        budgetRow.innerHTML += `<td class="tdfont">${formatIndia(budgetN[key])}</td>`;
                     }
                 });
-             }
+            }
             months.forEach(month => {
-                categoryRow.innerHTML += `<td class="amount-cell" ${cat_color}>${(cls_element[month] != "0.00") ? formatIndia(cls_element[month]) : ""}</td>`;
+                budgetRow.innerHTML += `<td class="tdfont">${budgetN[month] != "0.00" ? formatIndia(budgetN[month]) : ""}</td>`;
             });
-            categoryRow.innerHTML += `<td class="tdfont"></td>`;
-            budgetTableBody.appendChild(categoryRow);
+            budgetRow.innerHTML += `<td class="tdfont"></td>`;
+            budgetTableBody.appendChild(budgetRow);
 
-            // Add click event to toggle category details
-            const categoryCell = categoryRow.querySelector(`.${cls_element.class}-category`);
-            categoryCell.addEventListener('click', function() {
-                toggleCategoryDetails(cls_element.budgetId, cls_element.class);
+            // Add click event to toggle budget details
+            const budgetNameDiv = budgetRow.querySelector('.budget-name');
+            budgetNameDiv.addEventListener('click', function() {
+                toggleBudgetDetails(budgetN.id);
             });
 
-            // Render Account name
-            // Filter based on the budget ID and class in this account arr
-            let Account_filtered = CoaArr.filter(item => item.budgetId === cls_element.budgetId && item.classId === cls_element.classId);
-            Account_filtered.forEach(Account_element => {
-                const accountRow = document.createElement('tr');
-                accountRow.classList.add('account-row');
-                accountRow.setAttribute('data-budget-id', Account_element.budgetId);
-                accountRow.setAttribute('data-year', budgetN.year);
-                accountRow.setAttribute('data-category', cls_element.class);
-                accountRow.setAttribute('data-category-id', cls_element.classId);
-                accountRow.setAttribute('data-account', Account_element.accountId);
-                // For Add Assumption increase or decrease percentage
-                accountRow.setAttribute('data-row-id', Account_element.accountId);
-                accountRow.setAttribute('data-budgetname', budgetN.name);
-                accountRow.setAttribute('data-accountname', Account_element.accountName);
-                // || defaults === "budgetItems"
-                accountRow.innerHTML = `
-                    <td ${accountColor}></td>
-                    <td colspan="3" class="account-td ${"id-"+Account_element.accountId}-category" ${accountColor}>
-                        ${(defaults === "Assumption_budget") 
-                            ? `<a id="openAssumPercent" class="ass-percnt-moda-link ms-auto" href="#" 
-                                data-action="assumption-percentage-row"
-                                data-accountname ="${Account_element.accountName}"
-                                title="Inc/Dec Assumption" 
-                                onclick="event.stopPropagation();"> 
-                                <i class="bi bi-percent"></i>
-                            </a>`: ``
-                        }
-                        <span style="margin-left: 5px;">${Account_element.accountName}<span>
-                        <a class="fill-budget-value ms-auto" href="#" data-action="add-row">
-                            <small>Add row</small> 
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon align-middle">
-                                <path fill="#208EFF" d="M5 256c0 138.6 112.4 251 251 251s251-112.4 251-251S394.6 5 256 5 5 117.4 5 256zm249.2-130.7l113 113c4.9 4.9 7.3 11.3 7.3 17.7 0 6.4-2.4 12.8-7.3 17.7l-113 113c-9.8 9.8-25.6 9.8-35.4 0-9.8-9.8-9.8-25.6 0-35.4l95.4-95.4-95.4-95.4c-9.8-9.8-9.8-25.6 0-35.4 9.8-9.6 25.6-9.6 35.4.2z">
-                                </path>
-                            </svg>
-                        </a>
-                    </td>                        
+            // Render class name
+            // Filter based on the budget ID in this class arr
+            let Class_filtered = classArr.filter(item => item.budgetId === budgetN.id);
+            Class_filtered.forEach(cls_element => {
+                const categoryRow = document.createElement('tr');
+                categoryRow.classList.add('category-row');
+                categoryRow.setAttribute('data-budget-id', cls_element.budgetId);
+                categoryRow.setAttribute('data-year', budgetN.year);
+                categoryRow.setAttribute('data-category', cls_element.class);
+
+                const categoryIcon = cls_element.class === 'REVENUE' ? 
+                    '<i class="fas fa-arrow-up" style="color: var(--success-green);"></i>' : 
+                    '<i class="fas fa-arrow-down" style="color: var(--danger-red);"></i>';
+                let cat_color = cls_element.class === 'REVENUE'? "style='color: var(--success-green);background-color: #e4e4e4;'" : "style='color: var(--danger-red);background-color: #e4e4e4;'";
+
+                categoryRow.innerHTML = `
+                    <td style="background-color: #e4e4e4;"></td>
+                    <td colspan="3" class="${cls_element.class}-category" style="background-color: #e4e4e4;">
+                        ${categoryIcon} ${cls_element.class}
+                    </td>       
                 `;
                 if(defaults === "addBudget" || defaults === "prefillBudget"){
-                    Object.keys(Account_element).forEach(key => {
+                    Object.keys(cls_element).forEach(key => {
                         if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
-                            accountRow.innerHTML += `<td class="amount-cell actual-colunm">${formatIndia(Account_element[key])}</td>`;
+                            categoryRow.innerHTML += `<td class="amount-cell" ${cat_color}>${formatIndia(cls_element[key])}</td>`;
                         }
                     });
                 }
                 months.forEach(month => {
-                    accountRow.innerHTML += `<td class="amount-cell">${(Account_element[month] != "0.00") ? formatIndia(Account_element[month]) : ""}</td>`;
+                    categoryRow.innerHTML += `<td class="amount-cell" ${cat_color}>${(cls_element[month] != "0.00") ? formatIndia(cls_element[month]) : ""}</td>`;
                 });
-                accountRow.innerHTML += `<td class="tdfont"></td>`;
-                budgetTableBody.appendChild(accountRow);
-                
-                // Add click event to toggle account details
-                const accCell = accountRow.querySelector(`.${"id-"+Account_element.accountId}-category`);
-                accCell.addEventListener('click', function() {
-                    toggleAccountDetails(cls_element.budgetId, Account_element.accountId);
+                categoryRow.innerHTML += `<td class="tdfont"></td>`;
+                budgetTableBody.appendChild(categoryRow);
+
+                // Add click event to toggle category details
+                const categoryCell = categoryRow.querySelector(`.${cls_element.class}-category`);
+                categoryCell.addEventListener('click', function() {
+                    toggleCategoryDetails(cls_element.budgetId, cls_element.class);
                 });
 
-                // Render Customer Arr
-                let customer_filtered = customerArr.filter(item => 
-                    item.budgetId === cls_element.budgetId && 
-                    item.classId === cls_element.classId &&
-                    item.accountId === Account_element.accountId 
-                );
-                customer_filtered.forEach(customer_element => {
-                    const customerRow = document.createElement('tr');
-                    customerRow.classList.add('customer-row');
-                    customerRow.setAttribute('data-budget-id', customer_element.budgetId);
-                    customerRow.setAttribute('data-budgetname', budgetN.name);
-                    customerRow.setAttribute('data-year', budgetN.year);
-                    customerRow.setAttribute('data-category', cls_element.class);
-                    customerRow.setAttribute('data-category-id', cls_element.classId);
-                    customerRow.setAttribute('data-account', Account_element.accountId);
-                    customerRow.setAttribute('data-accountname', Account_element.accountName);
-                    customerRow.setAttribute('data-customername', customer_element.customer);
-                    customerRow.setAttribute('data-itemid', customer_element.item_id);
-                    
-                    let customerrowHTML= `
-                    <td></td>
-                    <td colspan="3" class="customer-td">
-                        <a class="autofill-value ms-auto" href="#" 
-                        data-action="autofill-row" 
-                        data-itemid ="${customer_element.item_id}">
-                            <small>Autofill</small> 
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon align-middle">
-                                <path fill="#208EFF" d="M5 256c0 138.6 112.4 251 251 251s251-112.4 251-251S394.6 5 256 5 5 117.4 5 256zm249.2-130.7l113 113c4.9 4.9 7.3 11.3 7.3 17.7 0 6.4-2.4 12.8-7.3 17.7l-113 113c-9.8 9.8-25.6 9.8-35.4 0-9.8-9.8-9.8-25.6 0-35.4l95.4-95.4-95.4-95.4c-9.8-9.8-9.8-25.6 0-35.4 9.8-9.6 25.6-9.6 35.4.2z">
-                                </path>
-                            </svg>
-                        </a>
-                        <input type="text" class="amount-input-text" value="${customer_element.customer}" 
-                            data-budget-id="${customer_element.budgetId}" 
-                            data-category="${cls_element.class}" 
-                            data-categoryId="${Account_element.classId}" 
-                            data-account="${Account_element.accountId}" 
-                        >
-                    </td>`
-                    if(defaults === "addBudget" || defaults === "prefillBudget" ){
-                        Object.keys(customer_element).forEach(key => {
+                // Render Account name
+                // Filter based on the budget ID and class in this account arr
+                let Account_filtered = CoaArr.filter(item => item.budgetId === cls_element.budgetId && item.classId === cls_element.classId);
+                Account_filtered.forEach(Account_element => {
+                    const accountRow = document.createElement('tr');
+                    accountRow.classList.add('account-row');
+                    accountRow.setAttribute('data-budget-id', Account_element.budgetId);
+                    accountRow.setAttribute('data-year', budgetN.year);
+                    accountRow.setAttribute('data-category', cls_element.class);
+                    accountRow.setAttribute('data-category-id', cls_element.classId);
+                    accountRow.setAttribute('data-account', Account_element.accountId);
+                    // For Add Assumption increase or decrease percentage
+                    accountRow.setAttribute('data-row-id', Account_element.accountId);
+                    accountRow.setAttribute('data-budgetname', budgetN.name);
+                    accountRow.setAttribute('data-accountname', Account_element.accountName);
+                    // || defaults === "budgetItems"
+                    accountRow.innerHTML = `
+                        <td ${accountColor}></td>
+                        <td colspan="3" class="account-td ${"id-"+Account_element.accountId}-category" ${accountColor}>
+                            ${(defaults === "Assumption_budget") 
+                                ? `<a id="openAssumPercent" class="ass-percnt-moda-link ms-auto" href="#" 
+                                    data-action="assumption-percentage-row"
+                                    data-accountname ="${Account_element.accountName}"
+                                    title="Inc/Dec Assumption" 
+                                    onclick="event.stopPropagation();"> 
+                                    <i class="bi bi-percent"></i>
+                                </a>`: ``
+                            }
+                            <span style="margin-left: 5px;">${Account_element.accountName}<span>
+                            <a class="fill-budget-value ms-auto" href="#" data-action="add-row">
+                                <small>Add row</small> 
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon align-middle">
+                                    <path fill="#208EFF" d="M5 256c0 138.6 112.4 251 251 251s251-112.4 251-251S394.6 5 256 5 5 117.4 5 256zm249.2-130.7l113 113c4.9 4.9 7.3 11.3 7.3 17.7 0 6.4-2.4 12.8-7.3 17.7l-113 113c-9.8 9.8-25.6 9.8-35.4 0-9.8-9.8-9.8-25.6 0-35.4l95.4-95.4-95.4-95.4c-9.8-9.8-9.8-25.6 0-35.4 9.8-9.6 25.6-9.6 35.4.2z">
+                                    </path>
+                                </svg>
+                            </a>
+                        </td>                        
+                    `;
+                    if(defaults === "addBudget" || defaults === "prefillBudget"){
+                        Object.keys(Account_element).forEach(key => {
                             if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
-                                customerrowHTML += `<td class="amount-cell actual-cell actual-colunm" data-actual-month="${key}">${formatIndia(customer_element[key])}</td>`;
+                                accountRow.innerHTML += `<td class="amount-cell actual-colunm">${formatIndia(Account_element[key])}</td>`;
                             }
                         });
                     }
-                    months.forEach((month, idx) => {
-                    const val = customer_element[month] != "0.00" ? formatIndia(customer_element[month]) : "";
-                    customerrowHTML += `
-                        <td class="amount-cell">
-                        <input type="text" class="amount-input"
-                            value="${val}" 
-                            data-budget-id="${customer_element.budgetId}" 
-                            data-category="${cls_element.class}" 
-                            data-account="${Account_element.accountId}"
-                            data-month="${idx + 1}">
-                        </td>
-                    `;
+                    months.forEach(month => {
+                        accountRow.innerHTML += `<td class="amount-cell">${(Account_element[month] != "0.00") ? formatIndia(Account_element[month]) : ""}</td>`;
                     });
-                    if(defaults === "budgetItems"){
-                        customerrowHTML += `<td class="amount-cell">
-                            <div class="action-icons">
-                                <div class="approve-reject">
-                                    
-                                </div>
-                                <div class="remove">
-                                    <i class="fa fa-trash" title="Remove Item" onclick="DeleteRecordByID('Budget_Manager_Items_Js', '${customer_element.item_id}')"></i>
-                                </div>
-                            </div>
-                        </td>`;
-                    }
-                    else{
-                        customerrowHTML += `<td class="amount-cell">
-                            <div class="action-icons">
-                                <div class="approve-reject">
-                                    
-                                </div>
-                                <div class="remove">
-                                    <i class="fa fa-trash trash-icon" title="remove" data-item-id="${customer_element.item_id}"></i>
-                                </div>
-                            </div>
-                        </td>`;
-                    }
-                    customerRow.innerHTML = customerrowHTML
-                    window.tdCount = customerRow.querySelectorAll("td").length;
-                    budgetTableBody.appendChild(customerRow);
+                    accountRow.innerHTML += `<td class="tdfont"></td>`;
+                    budgetTableBody.appendChild(accountRow);
+                    
+                    // Add click event to toggle account details
+                    const accCell = accountRow.querySelector(`.${"id-"+Account_element.accountId}-category`);
+                    accCell.addEventListener('click', function() {
+                        toggleAccountDetails(cls_element.budgetId, Account_element.accountId);
+                    });
 
-                    // Attach change event for this row for final array
-                    if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget"){
-                        attachInputListeners(customerRow); 
-                        attachInputListenersCust(customerRow);
-                    }                    
+                    // Render Customer Arr
+                    let customer_filtered = customerArr.filter(item => 
+                        item.budgetId === cls_element.budgetId && 
+                        item.classId === cls_element.classId &&
+                        item.accountId === Account_element.accountId 
+                    );
+                    customer_filtered.forEach(customer_element => {
+                        const customerRow = document.createElement('tr');
+                        customerRow.classList.add('customer-row');
+                        customerRow.setAttribute('data-budget-id', customer_element.budgetId);
+                        customerRow.setAttribute('data-budgetname', budgetN.name);
+                        customerRow.setAttribute('data-year', budgetN.year);
+                        customerRow.setAttribute('data-category', cls_element.class);
+                        customerRow.setAttribute('data-category-id', cls_element.classId);
+                        customerRow.setAttribute('data-account', Account_element.accountId);
+                        customerRow.setAttribute('data-accountname', Account_element.accountName);
+                        customerRow.setAttribute('data-customername', customer_element.customer);
+                        customerRow.setAttribute('data-itemid', customer_element.item_id);
+                        
+                        let customerrowHTML= `
+                        <td></td>
+                        <td colspan="3" class="customer-td">
+                            <a class="autofill-value ms-auto" href="#" 
+                            data-action="autofill-row" 
+                            data-itemid ="${customer_element.item_id}">
+                                <small>Autofill</small> 
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="icon align-middle">
+                                    <path fill="#208EFF" d="M5 256c0 138.6 112.4 251 251 251s251-112.4 251-251S394.6 5 256 5 5 117.4 5 256zm249.2-130.7l113 113c4.9 4.9 7.3 11.3 7.3 17.7 0 6.4-2.4 12.8-7.3 17.7l-113 113c-9.8 9.8-25.6 9.8-35.4 0-9.8-9.8-9.8-25.6 0-35.4l95.4-95.4-95.4-95.4c-9.8-9.8-9.8-25.6 0-35.4 9.8-9.6 25.6-9.6 35.4.2z">
+                                    </path>
+                                </svg>
+                            </a>
+                            <input type="text" class="amount-input-text" value="${customer_element.customer}" 
+                                data-budget-id="${customer_element.budgetId}" 
+                                data-category="${cls_element.class}" 
+                                data-categoryId="${Account_element.classId}" 
+                                data-account="${Account_element.accountId}" 
+                            >
+                        </td>`
+                        if(defaults === "addBudget" || defaults === "prefillBudget" ){
+                            Object.keys(customer_element).forEach(key => {
+                                if (key.startsWith("Actual_") && parseFloat(budgetN[key]) > 0) {
+                                    customerrowHTML += `<td class="amount-cell actual-cell actual-colunm" data-actual-month="${key}">${formatIndia(customer_element[key])}</td>`;
+                                }
+                            });
+                        }
+                        months.forEach((month, idx) => {
+                        const val = customer_element[month] != "0.00" ? formatIndia(customer_element[month]) : "";
+                        customerrowHTML += `
+                            <td class="amount-cell">
+                            <input type="text" class="amount-input"
+                                value="${val}" 
+                                data-budget-id="${customer_element.budgetId}" 
+                                data-category="${cls_element.class}" 
+                                data-account="${Account_element.accountId}"
+                                data-month="${idx + 1}">
+                            </td>
+                        `;
+                        });
+                        if(defaults === "budgetItems"){
+                            customerrowHTML += `<td class="amount-cell">
+                                <div class="action-icons">
+                                    <div class="approve-reject">
+                                        
+                                    </div>
+                                    <div class="remove">
+                                        <i class="fa fa-trash" title="Remove Item" onclick="DeleteRecordByID('Budget_Manager_Items_Js', '${customer_element.item_id}')"></i>
+                                    </div>
+                                </div>
+                            </td>`;
+                        }
+                        else{
+                            customerrowHTML += `<td class="amount-cell">
+                                <div class="action-icons">
+                                    <div class="approve-reject">
+                                        
+                                    </div>
+                                    <div class="remove">
+                                        <i class="fa fa-trash trash-icon" title="remove" data-item-id="${customer_element.item_id}"></i>
+                                    </div>
+                                </div>
+                            </td>`;
+                        }
+                        customerRow.innerHTML = customerrowHTML
+                        window.tdCount = customerRow.querySelectorAll("td").length;
+                        budgetTableBody.appendChild(customerRow);
+
+                        // Attach change event for this row for final array
+                        if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget"){
+                            attachInputListeners(customerRow); 
+                            attachInputListenersCust(customerRow);
+                        }                    
+                    });
                 });
             });
         });
-    });
+    }
+    else{
+        budgetTableBody.innerHTML = `<tr><td colspan='17'>No record found!</td></tr>`;
+    }   
     // deleted add budget Items
     document.getElementById("budgetTableBody").addEventListener("click", (e) => {
         if (e.target && e.target.classList.contains("trash-icon")) {

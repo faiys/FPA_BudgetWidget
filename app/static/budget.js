@@ -386,6 +386,7 @@ document.getElementById("openPreBud").addEventListener("click", (e) => {
 document.getElementById("closePreBud").addEventListener("click", () => {
   document.getElementById('PreBudName').value = "";
   document.getElementById('lookupInput').value = "";
+  PreBuderrorDiv.style.display = 'none';
   prefillbud_pop.style.display = "none";  
 });
 
@@ -448,6 +449,14 @@ PreBudaddBtn.addEventListener('click', () => {
     PreBuderrorDiv.style.display = 'block';
     return;
   }
+
+  let budgetItemsAllDataJsonValidation = JSON.parse(localStorage.getItem('budgetItemsData'));
+  if(budgetItemsAllDataJsonValidation.length <= 0 ){
+    PreBuderrorDiv.textContent = '⚠ Oops! No budget data available';
+    PreBuderrorDiv.style.display = 'block';
+    return;
+  }
+
   PreBuderrorDiv.style.display = 'none';
   prefillbud_pop.style.display = "none";
   // Call add budget fucn

@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Fetch Records
 async function fetch(ReportName, recordCursor, AllFetchArr){
+    let Arr_merged =[];
     try{
         let criteriaVar = "";
         if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
@@ -45,32 +46,39 @@ async function fetch(ReportName, recordCursor, AllFetchArr){
                     return await fetch(ReportName, fetchResp.record_cursor, AllFetchArr);
                 }
                 else{
-                    let Arr_merged = AllFetchArr.flat();
+                    Arr_merged = AllFetchArr.flat();
                     // get only items arr for pagination
                     // const budgetItems = Arr_merged.flatMap(obj => obj.Budget_Items);
                     // console.log("budgetItems - ",Arr_merged);
                     if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
-                        // Store array for searching and resue lookup
-                        const budgetItemsData_cached = localStorage.getItem('budgetItemsData');
-                        if (budgetItemsData_cached) {
-                            localStorage.removeItem('budgetItemsData');
-                        }
-                        localStorage.setItem('budgetItemsData', JSON.stringify(Arr_merged));
+                        ArrayStorage(Arr_merged)
                     }
                     return Arr_merged;
                 }
             }
             else{
+                if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
+                    ArrayStorage(Arr_merged)
+                }
                 console.log("No Record found - ",fetchResp)
+                return Arr_merged;
             }
         }
         else{
+            if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
+                ArrayStorage(Arr_merged)
+            }
             console.log("Fetch API Error")
+            return Arr_merged;
         }
     }
     catch (err)
     {
+        if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
+            ArrayStorage(Arr_merged)
+        }
         console.log("zoho init error = ", err)
+        return Arr_merged;
     }
 }
 
@@ -266,6 +274,15 @@ async function POSTBulkRecord(FormName, inputArr){
          console.log("zoho init error for update = ", err)
          return err
     }
+}
+
+ // Store array for searching and resue lookup
+function ArrayStorage(inputArr){
+    const budgetItemsData_cached = localStorage.getItem('budgetItemsData');
+    if (budgetItemsData_cached) {
+        localStorage.removeItem('budgetItemsData');
+    }
+    localStorage.setItem('budgetItemsData', JSON.stringify(inputArr));
 }
 
 //DateTime formate

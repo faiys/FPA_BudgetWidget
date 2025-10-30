@@ -19,6 +19,7 @@ document.getElementById("openAssum").addEventListener("click", (e) => {
 document.getElementById("closeAssum").addEventListener("click", () => {
   document.getElementById('AssumName').value = "";
   document.getElementById('assum-lookupInput').value = "";
+  assumerrorDiv.style.display = 'none';
   assumPop.style.display = "none";  
 });
 
@@ -82,6 +83,14 @@ assumaddBtn.addEventListener('click', () => {
     assumerrorDiv.style.display = 'block';
     return;
   }
+
+  let budgetItemsAllDataJsonValidations = JSON.parse(localStorage.getItem('budgetItemsData'));
+  if(budgetItemsAllDataJsonValidations.length <= 0 ){
+    assumerrorDiv.textContent = '⚠ Oops! No budget data available';
+    assumerrorDiv.style.display = 'block';
+    return;
+  }
+
   assumerrorDiv.style.display = 'none';
   assumPop.style.display = "none";
   // Call add budget fucn
