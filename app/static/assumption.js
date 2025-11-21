@@ -98,18 +98,22 @@ assumaddBtn.addEventListener('click', () => {
 });
 
 async function AssumGetBudget(budgetID, Assumname){
-  let Assum_BudgetResp = await showLoaderWhile(fetch("Budget_Manager_Items_Js", "Assumption_budget", [budgetID]))
-  if(Assum_BudgetResp){
-    Assum_BudgetResp.forEach(item => {
-      // If Budget_Manager exists, update its Name
-      if (item.Budget_Manager) {
-          item.Budget_Manager.Name = Assumname;
-          item.Budget_Manager.zc_display_value = Assumname;
-      }
-      item["Budget_Manager.Name"] = Assumname;
-    });
-    showLoaderWhile(RenderBudgetTable("", "",Assum_BudgetResp, defaults="Assumption_budget"))
-  }
+     const UserLists = await getUserDetail("All_Users_Js", "", [])
+     if(UserLists != null){
+        let OrgId = UserLists[0];
+        let Assum_BudgetResp = await showLoaderWhile(fetch("Budget_Manager_Items_Js", "Assumption_budget", [budgetID], OrgId))
+        if(Assum_BudgetResp){
+            Assum_BudgetResp.forEach(item => {
+            // If Budget_Manager exists, update its Name
+            if (item.Budget_Manager) {
+                item.Budget_Manager.Name = Assumname;
+                item.Budget_Manager.zc_display_value = Assumname;
+            }
+            item["Budget_Manager.Name"] = Assumname;
+            });
+            showLoaderWhile(RenderBudgetTable("", "",Assum_BudgetResp, defaults="Assumption_budget", OrgId))
+        }
+     }
 }
 
 
@@ -245,7 +249,6 @@ assumPercentAddbtn.addEventListener('click', () => {
   assumerrorDiv.style.display = 'none';
   //  getting table values callled final arr
   const finalFetchArr =  window.finalArrs;
-  console.log("All table data:", finalFetchArr);
 
   // Find the currently active row from the modal's dataset
   const activeRowId = AssumPercnPop.dataset.activeRow;
@@ -254,6 +257,7 @@ assumPercentAddbtn.addEventListener('click', () => {
     console.warn("No active row found!");
     return;
   }
+  
   let active_accountRow_filtered = finalFetchArr.filter(item => 
     item.Budget_Manager === Active_accountRow.dataset.budgetId 
     && item.Class === Active_accountRow.dataset.categoryId
@@ -273,7 +277,6 @@ assumPercentAddbtn.addEventListener('click', () => {
         }
       });
   });
-  console.log("finalFetchArr = ",finalFetchArr)
 
 
   // // Transform the array
@@ -292,12 +295,13 @@ assumPercentAddbtn.addEventListener('click', () => {
               Class: item.class_name,
               ID: item.Class
           },
+          Organisation: {
+              ID: item.Organisation,
+              Name: ""
+          },  
       };
   });
 
-  console.log(transformedArr);
-
-  
   AssumPercnPop.style.display = "none";
-  showLoaderWhile(RenderBudgetTable("", "",transformedArr, defaults="Assumption_budget"))
+  showLoaderWhile(RenderBudgetTable("", "",transformedArr, defaults="Assumption_budget"),"")
 });

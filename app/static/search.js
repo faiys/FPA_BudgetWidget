@@ -165,7 +165,7 @@ applySearchBtn.addEventListener('click', () => {
     });
 
     // Render the filtered table
-    showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "", budgetsearcArr, "search_Defaults"));
+    showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "", budgetsearcArr, "search_Defaults", ""));
 
     // Close Search container
     searchContainer.classList.remove('active');
@@ -173,14 +173,18 @@ applySearchBtn.addEventListener('click', () => {
 });
 
 // Clear Search
-clearSearchBtn.addEventListener('click', () => {
+clearSearchBtn.addEventListener('click', async() => {
   
   searchBudgetLookupInput.value = null;
   searchYearLookupInput.value = null;
   searchClassLookupInput.value = null;
   searchAccountLookupInput.value = null;
   searchCustomerLookupInput.value = null;
-  showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr=[], defaults="budgetItems"))
+   const userListData = await getUserDetail("All_Users_Js", "", [])
+    if(userListData != null){
+        const organID = userListData[0];
+        showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr=[], defaults="budgetItems", organID))
+    }
   
   // Close Search container
   searchContainer.classList.remove('active');

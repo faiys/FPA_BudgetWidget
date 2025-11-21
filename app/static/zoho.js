@@ -4,29 +4,51 @@ AllFetchArr = [];
 const error_msg = document.getElementById("error-msdid");
 
 // Onload run fetch data
-document.addEventListener("DOMContentLoaded", () => {
- showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems"))
+// document.addEventListener("DOMContentLoaded", () => {
+//  showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems"))
 
-//  RenderBudgetTable("All_Budget_Managers_Js", "",AllFetchArr, defaults="budgetItems")
-//  fetch("All_Budget_Managers_Js", "", AllFetchArr)
+// //  RenderBudgetTable("All_Budget_Managers_Js", "",AllFetchArr, defaults="budgetItems")
+// //  fetch("All_Budget_Managers_Js", "", AllFetchArr)
+// });
+
+document.addEventListener("DOMContentLoaded", async () => {
+    try{
+
+        const userList = await getUserDetail("All_Users_Js", "", [])
+        
+        if(userList != null){
+            const orgId = userList[0];
+            showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems", orgId))
+        }
+    }
+    catch(err){
+        console.error("Error loading P&L data:", err);
+    }
 });
 
 // Fetch Records
-async function fetch(ReportName, recordCursor, AllFetchArr){
+async function fetch(ReportName, recordCursor, AllFetchArr, orgId){
     let Arr_merged =[];
     try{
         let criteriaVar = "";
         if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
             
-            criteriaVar = "(Budget_Manager != null)"
+            criteriaVar = "(Budget_Manager != null && Organisation == "+`${orgId}`+")"
         }
         else if(ReportName === "COA_Report" && AllFetchArr.length  === 0 && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
             criteriaVar = "(Class.Class != \"EQUITY\" && Class.Class != \"LIABILITY\" && Class.Class != \"ASSET\" && Status == \"ACTIVE\")"
         }
         else if(ReportName === "Budget_Manager_Items_Js" && AllFetchArr.length  > 0  && recordCursor === "prefilbudget" || recordCursor === "Assumption_budget"){
-            criteriaVar = "(Budget_Manager == "+AllFetchArr[0]+")"
+            criteriaVar = "(Budget_Manager == "+AllFetchArr[0]+"&& Organisation == "+`${orgId}`+")"
             recordCursor = "";
             AllFetchArr = [];
+        }
+        else if(ReportName === "All_Users_Js"){
+           const loginEmail = await getLoginUserID(); 
+           criteriaVar = `Status == "Active" && Email == "${loginEmail}"`;
+        }
+        else if(ReportName === "Pnl_With_Margin_Raw_JS" && orgId){
+           criteriaVar = `Organisation_Lookup == ${orgId}`;
         }
          var config = {
             app_name: AppName,
@@ -49,7 +71,6 @@ async function fetch(ReportName, recordCursor, AllFetchArr){
                     Arr_merged = AllFetchArr.flat();
                     // get only items arr for pagination
                     // const budgetItems = Arr_merged.flatMap(obj => obj.Budget_Items);
-                    // console.log("budgetItems - ",Arr_merged);
                     if(ReportName === "Budget_Manager_Items_Js" && recordCursor != "prefilbudget" && recordCursor != "Assumption_budget"){
                         ArrayStorage(Arr_merged)
                     }
@@ -83,7 +104,7 @@ async function fetch(ReportName, recordCursor, AllFetchArr){
 }
 
 // Update API
-function UpdateRecordByID(ReportName,RecID, customer_Arr){
+function UpdateRecordByID(ReportName,RecID, customer_Arr, orgId){
     let payload = "";
     try{
         if(ReportName === "Budget_Manager_Items_Js" && customer_Arr){
@@ -103,7 +124,8 @@ function UpdateRecordByID(ReportName,RecID, customer_Arr){
                     "October" : customer_Arr.October,
                     "November" : customer_Arr.November,
                     "December" : customer_Arr.December,
-                    UpdateRecordsJs : true
+                    UpdateRecordsJs : true,
+                    Organisation : orgId
                 }
             }
         }
@@ -115,15 +137,9 @@ function UpdateRecordByID(ReportName,RecID, customer_Arr){
             };
         ZOHO.CREATOR.DATA.updateRecordById(UpdateRec_config).then(function (Update_response) {
             if (Update_response.code == 3000) {
-
-                // // Call budget sycn to analytics
-                // if(ReportName === "Budget_Manager_Items_Js" && customer_Arr){
-                //      POSTRecord("Pnl_Schedule", []);
-                // }
-
-                
+               
                 let AllFetchArr = [];
-                showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "", AllFetchArr, defaults="budgetItems"));
+                showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "", AllFetchArr, defaults="budgetItems", orgId));
                 
                 // Submit Response
                 errorMsg("Item Updated.", "green")
@@ -142,7 +158,7 @@ function UpdateRecordByID(ReportName,RecID, customer_Arr){
 }
 
 // Delete ApI
-function DeleteRecordByID(ReportName, RecID){
+function DeleteRecordByID(ReportName, RecID, orgId){
     try{
         var Deleteconfig = {
             app_name: AppName,
@@ -152,7 +168,7 @@ function DeleteRecordByID(ReportName, RecID){
         ZOHO.CREATOR.DATA.deleteRecordById(Deleteconfig).then(function (Delete_response) {
         if (Delete_response.code == 3000) {
             let AllFetchArr = [];
-            showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems"))
+            showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems", orgId))
 
             // Submit Response
             setTimeout(() => {
@@ -170,7 +186,7 @@ function DeleteRecordByID(ReportName, RecID){
 }
 
 // Post API
-async function POSTRecord(FormName, customer_Arr){
+async function POSTRecord(FormName, customer_Arr, orgId){
     let payload = "";
     try{
         if(FormName === "Budget_Manager_Items" && customer_Arr){
@@ -194,7 +210,8 @@ async function POSTRecord(FormName, customer_Arr){
                     "October" : customer_Arr.October,
                     "November" : customer_Arr.November,
                     "December" : customer_Arr.December,
-                     UpdateRecordsJs : true
+                     "UpdateRecordsJs" : true,
+                     "Organisation" : orgId
                 }
             }
         }
@@ -206,7 +223,8 @@ async function POSTRecord(FormName, customer_Arr){
                     "Year_field" : customer_Arr.year,
                     "Start_Month" :customer_Arr.month,
                     "Period" : customer_Arr.period,
-                    UpdateRecordsJs : true
+                    "UpdateRecordsJs" : true,
+                    "Organisation" : orgId
                 }
             }
         }
@@ -285,22 +303,31 @@ function ArrayStorage(inputArr){
     localStorage.setItem('budgetItemsData', JSON.stringify(inputArr));
 }
 
-//DateTime formate
-// function getCurrentDateTimeDDMMYYYY(addMins = 0, addSecs = 0) {
-//   const now = new Date();
+//Get Login Email ID
+async function getLoginUserID() {
+    try{
+        const getParamResp = await ZOHO.CREATOR.UTIL.getInitParams();
+        if(getParamResp){
+            return getParamResp.loginUser;
+        }
+    }
+    catch (err){
+        console.log("Get User - ", err)
+        return null
+    }
+}
 
-//   // Add minutes and seconds if passed
-//   now.setMinutes(now.getMinutes() + addMins);
-//   now.setSeconds(now.getSeconds() + addSecs);
-
-//   const day = String(now.getDate()).padStart(2, '0');
-//   let month = now.toLocaleString('default', { month: 'short' });
-//   if (month === "Sept") month = "Sep"; // normalize to 3-letter format
-//   const year = now.getFullYear();
-
-//   const hours = String(now.getHours()).padStart(2, '0');
-//   const mins = String(now.getMinutes()).padStart(2, '0');
-//   const secs = String(now.getSeconds()).padStart(2, '0');
-
-//   return `${day}-${month}-${year} ${hours}:${mins}:${secs}`;
-// }
+// Get User and Organization
+async function getUserDetail(ReportName, recordCursor, AllFetchArr){
+    try{
+        userResp = await fetch(ReportName, recordCursor, AllFetchArr);
+        if(userResp){
+            return [userResp[0]["Organisation"]["ID"], userResp[0]["Name"]];
+        }
+        
+    }
+    catch (err){
+        console.error("Error user login data:", err);
+        return null;
+    }
+}

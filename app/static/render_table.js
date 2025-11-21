@@ -24,14 +24,14 @@ function parseAddedTime(s) {
 }
 
 // Render budget Table
-async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults){
+async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults, orgId){
     budgetTableBody.innerHTML = '';
     let arrData;
     if(defaults == "budgetItems" && ReportName){
         document.getElementById("search-link").style.display = "inline-block";
         document.getElementById("exportID").style.display = "inline-block";
         document.getElementById("ExpotpdfId").style.display = "none";
-        arrData = await fetch(ReportName, recordCursor, AllFetchArr);
+        arrData = await fetch(ReportName, recordCursor, AllFetchArr,orgId);
     }
     else if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget" || defaults === "search_Defaults"){
         if(defaults != "search_Defaults"){
@@ -43,7 +43,6 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
         arrData = AllFetchArr;
     }
     arrData.sort((a, b) => parseAddedTime(b.Added_Time) - parseAddedTime(a.Added_Time));
-
     // Step 1: Sum month-wise by Budget_Manager.ID
     const BudgetNameArr = Object.values(
         arrData.reduce((acc, b) => {
@@ -53,6 +52,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                 id: budgetId,
                 name: b.Budget_Manager.Name,
                 year:b.Year_field,
+                organizationId: b.Organisation.ID,
                 ...months.reduce((m, month) => { m[month] = 0; return m }, {}), // initialize months
                 ...Actual_months.reduce((am, amonth) => { am[amonth] = 0; return am; }, {})
             };
@@ -228,7 +228,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                         </div>
                         <div class="budget-delete">
                         ${(defaults === "budgetItems") 
-                            ? `<i class="bi bi-trash2 ms-auto" title="Remove" onclick="event.stopPropagation(); DeleteRecordByID('All_Budget_Managers', '${budgetN.id}')"></i>` 
+                            ? `<i class="bi bi-trash2 ms-auto" title="Remove" onclick="event.stopPropagation(); DeleteRecordByID('All_Budget_Managers', '${budgetN.id}',  '${orgId}')"></i>` 
                             : ""
                         }
                         </div>
@@ -305,6 +305,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                     accountRow.setAttribute('data-year', budgetN.year);
                     accountRow.setAttribute('data-category', cls_element.class);
                     accountRow.setAttribute('data-category-id', cls_element.classId);
+                    accountRow.setAttribute('data-organizationID', budgetN.organizationId);
                     accountRow.setAttribute('data-account', Account_element.accountId);
                     // For Add Assumption increase or decrease percentage
                     accountRow.setAttribute('data-row-id', Account_element.accountId);
@@ -363,6 +364,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                         customerRow.classList.add('customer-row');
                         customerRow.setAttribute('data-budget-id', customer_element.budgetId);
                         customerRow.setAttribute('data-budgetname', budgetN.name);
+                        customerRow.setAttribute('data-organizationID', budgetN.organizationId);
                         customerRow.setAttribute('data-year', budgetN.year);
                         customerRow.setAttribute('data-category', cls_element.class);
                         customerRow.setAttribute('data-category-id', cls_element.classId);
@@ -417,7 +419,7 @@ async function RenderBudgetTable(ReportName, recordCursor, AllFetchArr, defaults
                                         
                                     </div>
                                     <div class="remove">
-                                        <i class="fa fa-trash" title="Remove Item" onclick="DeleteRecordByID('Budget_Manager_Items_Js', '${customer_element.item_id}')"></i>
+                                        <i class="fa fa-trash" title="Remove Item" onclick="DeleteRecordByID('Budget_Manager_Items_Js', '${customer_element.item_id}', '${orgId}')"></i>
                                     </div>
                                 </div>
                             </td>`;
@@ -511,6 +513,7 @@ function FinalTableArr(finalArr){
         finalobj.Account_Name = row.getAttribute("data-account");
         finalobj.class_name = row.getAttribute("data-category")
         finalobj.budget_name = row.getAttribute("data-budgetname")
+        finalobj.Organisation = row.getAttribute("data-organizationID")
         finalobj.account_name = row.getAttribute("data-accountname")
 
         // customer name from input
@@ -667,7 +670,7 @@ function handleFocusIn(e) {
             // Append buttons
             rowAction.appendChild(updateBtn);
             // Add event listeners
-            updateBtn.addEventListener('click', () => {
+            updateBtn.addEventListener('click', async() => {
                 const updatedCustomerData = {};
 
                 // Customer name
@@ -680,7 +683,11 @@ function handleFocusIn(e) {
                     updatedCustomerData[month] = parseNumber(monthInput.value) || "0";
                 });
 
-                UpdateRecordByID('Budget_Manager_Items_Js', row.dataset.itemid, updatedCustomerData);
+                const userList = await getUserDetail("All_Users_Js", "", [])
+                if(userList != null){
+                    let orgId = userList[0];
+                    UpdateRecordByID('Budget_Manager_Items_Js', row.dataset.itemid, updatedCustomerData, orgId);
+                }
             });
         }
 
@@ -749,7 +756,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (evt === 'click') {
             const td = btn.closest('td');
             const tr = td.closest('tr');
-
             let budgetId = tr.dataset.budgetId;
             let budgetname = tr.dataset.budgetname;
             let year = tr.dataset.year;
@@ -758,6 +764,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let account = tr.dataset.account;
             let account_name = tr.dataset.accountname;
             let itemID = tr.dataset.item_id;
+            let orgID = tr.dataset.organizationid;
         
             // Create new row
             const newRow = document.createElement('tr');
@@ -770,6 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
             newRow.setAttribute('data-account', account);
             newRow.setAttribute('data-accountname', account_name);
             newRow.setAttribute('data-itemid', itemID);
+            newRow.setAttribute('data-organizationID', orgID);
 
             newRow.innerHTML = `
                <td></td>
@@ -824,7 +832,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     </div>
                 </td>`;
-
             // Insert the new row just after the current row
             tr.insertAdjacentElement('afterend', newRow);
             if(defaults === "addBudget" || defaults === "prefillBudget" || defaults === "Assumption_budget"){
@@ -850,16 +857,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         updatedCustomerData[month] = parseNumber(monthInput.value) || "0";
                     });
 
-                    const itemAddResp = await POSTRecord('Budget_Manager_Items', updatedCustomerData);
-                    if(itemAddResp.code == 3000)
-                    {
-                        let AllFetchArr = [];
-                        showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr , defaults="budgetItems"))
-                        errorMsg("Item Added.", "green")
-                    }
-                    else{
-                        errorMsg("Item Add failed.", "red")
-                    }
+                    // const userList = await getUserDetail("All_Users_Js", "", [])
+                    // if(userList != null){
+                    //     let orgId = userList[0];
+                        const itemAddResp = await POSTRecord('Budget_Manager_Items', updatedCustomerData, orgID);
+                        if(itemAddResp.code == 3000)
+                        {
+                            let AllFetchArr = [];
+                            showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr , defaults="budgetItems", orgID))
+                            errorMsg("Item Added.", "green")
+                        }
+                        else{
+                            errorMsg("Item Add failed.", "red")
+                        }
+                    // }
                 });
             }
         }

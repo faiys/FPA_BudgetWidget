@@ -63,7 +63,7 @@ function populateYears(startYear, numYears) {
   }
 }
 // Budget Form Validation
-addBtn.addEventListener('click', () => {
+addBtn.addEventListener('click', async() => {
   const name = document.getElementById('budgetName').value.trim();
   const year = document.getElementById('budgetYear').value;
   const month = document.getElementById('startMonth').value;
@@ -77,19 +77,23 @@ addBtn.addEventListener('click', () => {
   errorDiv.style.display = 'none';
   budPop.style.display = "none";
   // Call add budget fucn
-  showLoaderWhile(AddBudget('Pnl_With_Margin_Raw_JS', '', AllFetchArr=[]))
+  const userList = await getUserDetail("All_Users_Js", "", [])
+    if(userList != null){
+        let orgId = userList[0];
+        showLoaderWhile(AddBudget('Pnl_With_Margin_Raw_JS', '', AllFetchArr=[],orgId))
+    }
 });
 
 // Add Budget
-async function AddBudget(ReportName, recordCursor, AllFetchArr){
+async function AddBudget(ReportName, recordCursor, AllFetchArr, orgId){
 
   const enter_name = document.getElementById('budgetName').value.trim();
   const enter_year = document.getElementById('budgetYear').value;
   const enter_month = document.getElementById('startMonth').value;
   const enter_period = document.getElementById('period').value;
 
-  let pnlNowyearArr = await fetch(ReportName, recordCursor, [])
-  let cosArrData = await fetch("COA_Report_JS", recordCursor, []);
+  let pnlNowyearArr = await fetch(ReportName, recordCursor, [], orgId)
+  let cosArrData = await fetch("COA_Report_JS", recordCursor, [], orgId);
 
   // Compute last 3 months including current
   let last3Months = [];
@@ -144,6 +148,7 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
     let matches = pnlNowyearArr.filter(pnl =>
       coa.Account_Name === pnl.Account_Name 
     );
+   
     if (matches.length > 0 ) {
       // Track distinct transaction details to avoid duplicates
       let seenDetails = new Set();
@@ -166,7 +171,11 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
               Name: enter_name
             },
             Customer: pnl.Customer,
-            Year_field: enter_year
+            Year_field: enter_year,
+            Organisation :{
+                ID : pnl.Organisation_Lookup.ID,
+                Name : pnl.Organisation_Lookup.Name
+            } 
           };
           // Find the 2nd month object from Last3Match that matches both Account_Name and Transaction_Details
           const secondMonthObj = summedArr.find((m) => 
@@ -233,8 +242,7 @@ async function AddBudget(ReportName, recordCursor, AllFetchArr){
       });
     }
   });
-  // console.log("mergerd - ", merged)
-  RenderBudgetTable("", "",merged, defaults="addBudget")
+  RenderBudgetTable("", "",merged, defaults="addBudget", orgId)
 }
 function createBudgetButtons(mergedArr, BudgetFormArr, type){
   const budgetSaveCancel = document.getElementById("budgetsave-cancel");
@@ -268,7 +276,7 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
       var postMap = {name:BudgetFormArr.name, year:BudgetFormArr.year, month:BudgetFormArr.month, period : ""};
     }
     // LoadingScreen();
-    const addbudgetResp = await POSTRecord("Budget_Manager", postMap);
+    const addbudgetResp = await POSTRecord("Budget_Manager", postMap, mergedArr[0]["Organisation"]);
     if(addbudgetResp.code == 3000)
     {
       const updatedArr = mergedArr.map(item => ({
@@ -276,12 +284,13 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
         "Budget_Manager": addbudgetResp.data.ID,
         "Account_Name": item.Account_Name,
         "Class": item.Class,
+        "Organisation":item.Organisation,
         "UpdateRecordsJs": true
       }));
       const buklAPIResp = await showLoaderWhile(POSTBulkRecord("Budget_Manager_Items", updatedArr));
       if(buklAPIResp.code == 3000){
         let AllFetchArr=[];
-        showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems"));
+        showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems", mergedArr[0]["Organisation"]));
         budgetSaveCancel.innerHTML = "";
       }
       else{
@@ -318,7 +327,7 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
 
   cancelBtn.addEventListener('click', function() {
     let AllFetchArr=[];
-    showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems"));
+    showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems", mergedArr[0]["Organisation"]));
     budgetSaveCancel.innerHTML = "";
     document.getElementById('budgetName').value = "";
     document.getElementById('budgetYear').value = "";
@@ -465,16 +474,20 @@ PreBudaddBtn.addEventListener('click', () => {
 
 // get Prefil budget
 async function PrefillGetBudget(budgetID, prefilname){
-  let PrefillBudgetResp = await showLoaderWhile(fetch("Budget_Manager_Items_Js", "prefilbudget", [budgetID]))
-  if(PrefillBudgetResp){
-    PrefillBudgetResp.forEach(item => {
-      // If Budget_Manager exists, update its Name
-      if (item.Budget_Manager) {
-          item.Budget_Manager.Name = prefilname;
-          item.Budget_Manager.zc_display_value = prefilname;
-      }
-      item["Budget_Manager.Name"] = prefilname;
-    });
-    showLoaderWhile(RenderBudgetTable("", "",PrefillBudgetResp, defaults="prefillBudget"))
-  }
+    const userLists = await getUserDetail("All_Users_Js", "", [])
+    if(userLists != null){
+        let orgId = userLists[0];
+        let PrefillBudgetResp = await showLoaderWhile(fetch("Budget_Manager_Items_Js", "prefilbudget", [budgetID], orgId))
+        if(PrefillBudgetResp){
+            PrefillBudgetResp.forEach(item => {
+            // If Budget_Manager exists, update its Name
+            if (item.Budget_Manager) {
+                item.Budget_Manager.Name = prefilname;
+                item.Budget_Manager.zc_display_value = prefilname;
+            }
+            item["Budget_Manager.Name"] = prefilname;
+            });
+            showLoaderWhile(RenderBudgetTable("", "",PrefillBudgetResp, defaults="prefillBudget", orgId))
+        }
+    }
 }
