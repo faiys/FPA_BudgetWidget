@@ -23,8 +23,13 @@ function subMonth(n) {
 }
 
 // New Modal budget Popups
-document.getElementById("openBudget").addEventListener("click", (e) => {
+document.getElementById("openBudget").addEventListener("click", async(e) => {
   e.preventDefault();
+  let budLimit = await budgetLimit();
+  if(budLimit != null){
+    errorMsg(budLimit, "red");
+    return;
+  }
   budPop.style.display = "flex";
   if(prefillbud_pop.style.display === "flex")
   {
@@ -375,8 +380,13 @@ function createBudgetButtons(mergedArr, BudgetFormArr, type){
 
 
 // Prefill Previus budget popup
-document.getElementById("openPreBud").addEventListener("click", (e) => {
+document.getElementById("openPreBud").addEventListener("click", async(e) => {
   e.preventDefault();
+  let budLimit = await budgetLimit();
+  if(budLimit != null){
+    errorMsg(budLimit, "red");
+    return;
+  }
   prefillbud_pop.style.display = "flex";
    if(budPop.style.display === "flex")
   {

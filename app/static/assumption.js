@@ -1,6 +1,11 @@
 // New Modal Assumption Popups
-document.getElementById("openAssum").addEventListener("click", (e) => {
+document.getElementById("openAssum").addEventListener("click",async (e) => {
   e.preventDefault();
+  let budLimit = await budgetLimit();
+  if(budLimit != null){
+    errorMsg(budLimit, "red");
+    return;
+  }
   assumPop.style.display = "flex";
   if(budPop.style.display === "flex")
   {

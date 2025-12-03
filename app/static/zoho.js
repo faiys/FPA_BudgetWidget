@@ -3,14 +3,6 @@ AllFetchArr = [];
 
 const error_msg = document.getElementById("error-msdid");
 
-// Onload run fetch data
-// document.addEventListener("DOMContentLoaded", () => {
-//  showLoaderWhile(RenderBudgetTable("Budget_Manager_Items_Js", "",AllFetchArr, defaults="budgetItems"))
-
-// //  RenderBudgetTable("All_Budget_Managers_Js", "",AllFetchArr, defaults="budgetItems")
-// //  fetch("All_Budget_Managers_Js", "", AllFetchArr)
-// });
-
 document.addEventListener("DOMContentLoaded", async () => {
     try{
 
@@ -49,6 +41,9 @@ async function fetch(ReportName, recordCursor, AllFetchArr, orgId){
         }
         else if(ReportName === "Pnl_With_Margin_Raw_JS" && orgId){
            criteriaVar = `Organisation_Lookup == ${orgId}`;
+        }
+        else if(ReportName === "All_Budget_Managers_Js" && orgId){
+           criteriaVar = `Organisation == ${orgId}`;
         }
          var config = {
             app_name: AppName,
@@ -322,12 +317,37 @@ async function getUserDetail(ReportName, recordCursor, AllFetchArr){
     try{
         userResp = await fetch(ReportName, recordCursor, AllFetchArr);
         if(userResp){
-            return [userResp[0]["Organisation"]["ID"], userResp[0]["Name"]];
+            return [userResp[0]["Organisation"]["ID"], userResp[0]["Name"], userResp[0]["Budget_limitations"]];
         }
         
     }
     catch (err){
         console.error("Error user login data:", err);
+        return null;
+    }
+}
+
+// Budget limitations
+async function budgetLimit(){
+    try{
+        const userLi = await getUserDetail("All_Users_Js", "", [])
+        if(userLi != null){
+            const budgetLimits = userLi[2];
+            const budgetCntResp = await fetch("All_Budget_Managers_Js", "", [], userLi[0]);
+            if(budgetCntResp){
+                const budgetCnt = budgetCntResp.length;
+                if(budgetLimits <= budgetCnt){
+                    console.log(budgetLimits , budgetCnt)
+                    return `You’ve hit the maximum of ${budgetCnt} budgets.`
+                }
+                return null
+            }
+            return null
+        } 
+        return null
+    }
+    catch (err){
+        console.error("Error in budget limit:", err);
         return null;
     }
 }
